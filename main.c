@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define NUM_SUITS 4
 #define NUM_RANKS 13
@@ -103,23 +104,50 @@ void printHand(Card hand[], int numCards) {
 
 void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
     char choice;
-    do {
+    bool ziehen = true;
+
+    while (ziehen) {
+        int currentHandValue = handValue(player, *playerCardCount);
+
+        // Display the current hand and value
         printf("Ihre Hand:\n");
         printHand(player, *playerCardCount);
-        printf("Aktueller Wert: %d\n", handValue(player, *playerCardCount));
-        if (handValue(player, *playerCardCount) >= 21) {
+        printf("Aktueller Wert: %d\n", currentHandValue);
+
+        // If the player's hand is already 21 or more, they can't draw further.
+        if (currentHandValue >= 21) {
             break;
         }
+
+        // Ask if the player wants to draw a new card
         printf("Wollen Sie eine weitere Karte ziehen? (j/n): ");
         scanf(" %c", &choice);
+
         if (choice == 'j') {
+            // Draw a card and increment the count
             player[*playerCardCount] = deck[*cardIndex];
             (*playerCardCount)++;
             (*cardIndex)++;
+
+            // After drawing a card, check if the player's hand value is 21 or more.
+            currentHandValue = handValue(player, *playerCardCount);
+            if (currentHandValue >= 21) {
+                break;
+            }
+        } else if (choice == 'n') {
+            ziehen = false;
+        } else {
+            printf("Bitte geben Sie eine richtige Eingabe ein!\n");
         }
     }
-    while (choice == 'j');
+
+    // After the loop ends, print final hand and value
+    printf("Ihre endgueltige Hand:\n");
+    printHand(player, *playerCardCount);
+    printf("Endgueltiger Wert: %d\n", handValue(player, *playerCardCount));
 }
+
+
 
 void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount) {
     printf("Hand des Dealers:\n");
