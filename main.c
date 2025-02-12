@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+/*
+    Initialize constants for the deck of cards
+*/
 #define NUM_SUITS 4
 #define NUM_RANKS 13
 #define DECK_SIZE (NUM_SUITS * NUM_RANKS)
@@ -10,16 +13,25 @@
 #define MAX_PLAYERS 6
 #define CARDS_PER_PLAYER 2
 
+/*
+    Define the structure of a card
+*/
 typedef struct {
     char *rank;
     char *suit;
     int value;
 } Card;
 
+/*
+    Initialize the deck of cards
+*/
 const char *suits[NUM_SUITS] = {"Herz", "Karo", "Pik", "Kreuz"};
 const char *ranks[NUM_RANKS] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Bube", "Dame", "Koenig", "Ass"};
 const int values[NUM_RANKS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
 
+/*
+    Generating the decks
+*/
 void initializeDeck(Card *deck) {
     int cardIndex = 0;
     for (int d = 0; d < TOTAL_DECKS; d++) {
@@ -34,6 +46,9 @@ void initializeDeck(Card *deck) {
     }
 }
 
+/*
+    Shuffling the cards by assigning each card a random generated index in the set of cards
+*/
 void shuffleDeck(Card *deck) {
     for (int i = 0; i < TOTAL_CARDS; i++) {
         int randomIndex = rand() % TOTAL_CARDS;
@@ -43,6 +58,10 @@ void shuffleDeck(Card *deck) {
     }
 }
 
+/*
+    Initiating the numbers of players
+    < 1 and > the amount of maximum players (6) isn't possible
+*/
 int choosePlayer() {
     int numPlayers;
     printf("Geben Sie die Anzahl der Spieler ein: ");
@@ -54,6 +73,10 @@ int choosePlayer() {
     return numPlayers;
 }
 
+/*
+    Dealing the first 2 cards to the players and the dealer
+    Cards of the player are shown, the dealer's second card is hidden
+*/
 void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS][TOTAL_CARDS], Card dealer[2]) {
     int cardIndex = 0;
     for (int player = 0; player < numPlayers; player++) {
@@ -79,6 +102,10 @@ void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS][TOTAL_CARDS
     printf("\n");
 }
 
+/*
+    Calculating the value of the hand
+    Aces are counted as 11, if the value of the hand is over 21, the value of the ace is changed to 1
+*/
 int handValue(Card hand[], int numCards) {
     int value = 0;
     int numAces = 0;
@@ -95,12 +122,20 @@ int handValue(Card hand[], int numCards) {
     return value;
 }
 
+/*
+    Printing the hand of the player
+*/
 void printHand(Card hand[], int numCards) {
     for (int i = 0; i < numCards; i++) {
         printf("%s %s\n", hand[i].rank, hand[i].suit);
     }
 }
 
+/*
+    Player's turn
+    The player can decide to draw another card or to stop
+    If the value of the hand is over 21, the player's turn is over
+*/
 void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
     char choice;
     do {
@@ -121,6 +156,10 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
     while (choice == 'j');
 }
 
+/*
+    Dealer's turn
+    The dealer has to draw cards until the value of the hand is at least 17
+*/
 void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount) {
     printf("Hand des Dealers:\n");
     printHand(dealer, *dealerCardCount);
@@ -135,21 +174,31 @@ void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount)
     }
 }
 
+/*
+    Main function
+    The game is played by the players and the dealer
+    The winner is determined by the value of the hand
+*/
 int main() {
     Card deck[TOTAL_CARDS];
     srand(time(NULL));
 
+    // call function `initializeDeck` to initialize the deck of cards
     initializeDeck(deck);
     shuffleDeck(deck);
 
+    // call function `choosePlayer` to choose the number of players
     int numPlayers = choosePlayer();
 
+    // initialize the players and the dealer
     Card players[MAX_PLAYERS][TOTAL_CARDS];
     Card dealer[CARDS_PER_PLAYER];
     int dealerCardCount = CARDS_PER_PLAYER;
 
+    // call function `dealCards` to deal the first 2 cards to the players and the dealer
     dealCards(deck, numPlayers, players, dealer);
 
+    // Players' turns
     for (int player = 0; player < numPlayers; player++) {
         printf("Spieler %d ist am Zug:\n", player + 1);
         int playerCardCount = CARDS_PER_PLAYER;
@@ -157,9 +206,11 @@ int main() {
         printf("\n");
     }
 
+    // Dealer's turn
     printf("Dealer ist am Zug:\n");
     dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
 
+    // Determine the winner
     for (int player = 0; player < numPlayers; player++) {
         int playerValue = handValue(players[player], TOTAL_CARDS);
         int dealerValue = handValue(dealer, dealerCardCount);
