@@ -165,9 +165,9 @@ int main() {
         int dealerValue = handValue(dealer, dealerCardCount);
         printf("Spieler %d hat %d Punkte.\n", player + 1, playerValue);
         if (playerValue > 21) {
-            printf("Spieler %d hat überkauft.\n", player + 1);
+            printf("Spieler %d hat ueberkauft.\n", player + 1);
         } else if (dealerValue > 21) {
-            printf("Dealer hat überkauft. Spieler %d gewinnt.\n", player + 1);
+            printf("Dealer hat ueberkauft. Spieler %d gewinnt.\n", player + 1);
         } else if (playerValue > dealerValue) {
             printf("Spieler %d gewinnt.\n", player + 1);
         } else if (playerValue < dealerValue) {
