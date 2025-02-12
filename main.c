@@ -104,6 +104,13 @@ void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS][TOTAL_CARDS
 }
 
 /*
+    Check if the value of the hand is 21
+*/
+bool blackjack(int value) {
+    return value == 21;
+}
+
+/*
     Calculating the value of the hand
     Aces are counted as 11, if the value of the hand is over 21, the value of the ace is changed to 1
 */
@@ -149,7 +156,7 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
         printHand(player, *playerCardCount);
         printf("Aktueller Wert: %d\n", currentHandValue);
 
-        // If the player's hand is already 21 or more, they can't draw further.
+        // If the player's hand is already 21 or more, they can't draw further.        
         if (currentHandValue >= 21) {
             break;
         }
@@ -180,6 +187,10 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
     printf("Ihre endgueltige Hand:\n");
     printHand(player, *playerCardCount);
     printf("Endgueltiger Wert: %d\n", handValue(player, *playerCardCount));
+
+    if (blackjack(handValue(player, *playerCardCount))) {
+        printf("Blackjack!\n");
+    }
 }
 
 /*
@@ -240,7 +251,7 @@ int main() {
     for (int player = 0; player < numPlayers; player++) {
         int playerValue = handValue(players[player], TOTAL_CARDS);
         int dealerValue = handValue(dealer, dealerCardCount);
-        printf("Spieler %d hat %d Punkte.\n", player + 1, playerValue);
+        printf("Spieler %d hat %d Punkte%s.\n", player + 1, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
         if (playerValue > 21) {
             printf("Spieler %d hat ueberkauft.\n", player + 1);
         } else if (dealerValue > 21) {
