@@ -123,6 +123,14 @@ bool blackjack(int value) {
 }
 
 /*
+    Check if the value of the final hand is over 21 (bust)
+*/
+bool checkBust(int value)
+{
+    return value > 21;
+}
+
+/*
     Calculating the value of the hand
     Aces are counted as 11, if the value of the hand is over 21, the value of the ace is changed to 1
 */
@@ -202,6 +210,11 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
 
     if (blackjack(handValue(player, *playerCardCount))) {
         printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
+    }
+
+    if (checkBust(handValue(player, *playerCardCount)))
+    {
+        printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
     }
 }
 
