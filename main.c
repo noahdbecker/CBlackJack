@@ -265,7 +265,7 @@ int main() {
         printf("Dealer ist am Zug:\n");
         dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
 
-        printf("\n\n\n");
+        printf("\n\n");
         printf("════════════════════\n\n");
 
         // Determine the winner
@@ -291,7 +291,7 @@ int main() {
 
         char choice = '\0';
         while (choice != 'j' && choice != 'n') {
-            printf("Wollen Sie erneut spielen? (j/n) ");
+            printf("\nWollen Sie erneut spielen? (j/n) ");
             scanf(" %c", &choice);
 
             if (choice == 'j') {
