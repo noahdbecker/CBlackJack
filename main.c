@@ -106,7 +106,7 @@ void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS+1][TOTAL_CAR
     for (int card = 0; card < CARDS_PER_PLAYER; card++) {
         dealer[card] = deck[cardIndex];
         if (card == 0) {
-            printf("  Verdeckte Karte\n");
+            printf(TEXT_RED "  (?)\n" TEXT_RESET);
         } else {
             printf("  %s %s\n", deck[cardIndex].rank, deck[cardIndex].suit);
         }
