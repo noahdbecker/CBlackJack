@@ -265,11 +265,14 @@ int main() {
         printf("Dealer ist am Zug:\n");
         dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
 
+        printf("\n\n\n");
+        printf("════════════════════\n\n");
+
         // Determine the winner
         for (int player = 0; player < numPlayers; player++) {
             int playerValue = handValue(players[player], TOTAL_CARDS);
             int dealerValue = handValue(dealer, dealerCardCount);
-            printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s.\n" TEXT_RESET, player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
+            printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
             if (playerValue > 21) {
                 printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
             } else if (dealerValue > 21) {
@@ -277,12 +280,14 @@ int main() {
             } else if (playerValue > dealerValue) {
                 printf("Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
             } else if (playerValue < dealerValue) {
-                printf("Dealer gewinnt gegen Spieler %d.\n", player + 1);
+                printf(TEXT_RED "Dealer gewinnt gegen Spieler %d.\n" TEXT_RESET, player + 1);
             } else {
                 printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
             }
             printf("\n");
         }
+
+        printf("════════════════════\n");
 
         char choice = '\0';
         while (choice != 'j' && choice != 'n') {
