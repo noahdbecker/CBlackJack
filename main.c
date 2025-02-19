@@ -217,6 +217,8 @@ void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount)
     The winner is determined by the value of the hand
 */
 int main() {
+    bool playing = true;
+
     Card deck[TOTAL_CARDS];
     srand(time(NULL));
 
@@ -232,39 +234,39 @@ int main() {
     Card dealer[CARDS_PER_PLAYER];
     int dealerCardCount = CARDS_PER_PLAYER;
 
-    // call function `dealCards` to deal the first 2 cards to the players and the dealer
-    dealCards(deck, numPlayers, players, dealer);
+    while (playing) {
+        // call function `dealCards` to deal the first 2 cards to the players and the dealer
+        dealCards(deck, numPlayers, players, dealer);
 
-    // Players' turns
-    for (int player = 0; player < numPlayers; player++) {
-        printf("Spieler %d ist am Zug:\n", player + 1);
-        int playerCardCount = CARDS_PER_PLAYER;
-        playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount);
-        printf("\n");
-    }
-
-    // Dealer's turn
-    printf("Dealer ist am Zug:\n");
-    dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
-
-    // Determine the winner
-    for (int player = 0; player < numPlayers; player++) {
-        int playerValue = handValue(players[player], TOTAL_CARDS);
-        int dealerValue = handValue(dealer, dealerCardCount);
-        printf("Spieler %d hat %d Punkte%s.\n", player + 1, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
-        if (playerValue > 21) {
-            printf("Spieler %d hat ueberkauft.\n", player + 1);
-        } else if (dealerValue > 21) {
-            printf("Dealer hat ueberkauft. Spieler %d gewinnt.\n", player + 1);
-        } else if (playerValue > dealerValue) {
-            printf("Spieler %d gewinnt.\n", player + 1);
-        } else if (playerValue < dealerValue) {
-            printf("Dealer gewinnt gegen Spieler %d.\n", player + 1);
-        } else {
-            printf("Spieler %d und der Dealer haben unentschieden.\n", player + 1);
+        // Players' turns
+        for (int player = 0; player < numPlayers; player++) {
+            printf("Spieler %d ist am Zug:\n", player + 1);
+            int playerCardCount = CARDS_PER_PLAYER;
+            playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount);
+            printf("\n");
         }
-        printf("\n");
-    }
 
-    return 0;
+        // Dealer's turn
+        printf("Dealer ist am Zug:\n");
+        dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
+
+        // Determine the winner
+        for (int player = 0; player < numPlayers; player++) {
+            int playerValue = handValue(players[player], TOTAL_CARDS);
+            int dealerValue = handValue(dealer, dealerCardCount);
+            printf("Spieler %d hat %d Punkte%s.\n", player + 1, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
+            if (playerValue > 21) {
+                printf("Spieler %d hat ueberkauft.\n", player + 1);
+            } else if (dealerValue > 21) {
+                printf("Dealer hat ueberkauft. Spieler %d gewinnt.\n", player + 1);
+            } else if (playerValue > dealerValue) {
+                printf("Spieler %d gewinnt.\n", player + 1);
+            } else if (playerValue < dealerValue) {
+                printf("Dealer gewinnt gegen Spieler %d.\n", player + 1);
+            } else {
+                printf("Spieler %d und der Dealer haben unentschieden.\n", player + 1);
+            }
+            printf("\n");
+        }
+    }
 }
