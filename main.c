@@ -17,6 +17,7 @@
 /*
     Text Styling
 */
+#define TEXT_UNDERLINE "\e[4m"
 #define TEXT_BOLD_UNDERLINE "\e[1;4m"
 #define TEXT_BOLD "\e[1m"
 #define TEXT_GREEN "\e[32m"
@@ -282,6 +283,11 @@ int main() {
 
         printf("\n\n");
         printf("════════════════════\n\n");
+
+        // Dealer summary
+        printf("*****************\n");
+        printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount));
+        printf("*****************\n\n");
 
         // Determine the winner
         for (int player = 0; player < numPlayers; player++) {
