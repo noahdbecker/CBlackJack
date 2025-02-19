@@ -300,6 +300,8 @@ int main() {
         }
     }
 
-    printf("Vielen Dank für's spielen!");
+    printf("\n\n═════════════════════════════════════\n");
+    printf("  ❤️ Vielen Dank für's spielen! ❤️");
+    printf("\n═════════════════════════════════════\n\n");
     return 0;
 }
