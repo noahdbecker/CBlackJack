@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include <string.h>
+
 
 /*
     Initialize constants for the deck of cards
@@ -157,7 +159,7 @@ void printHand(Card hand[], int numCards) {
     If the value of the hand is over 21, the player's turn is over
 */
 void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
-    char choice;
+    char choice[10];
     bool ziehen = true;
 
     while (ziehen) {
@@ -175,21 +177,27 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
 
         // Ask if the player wants to draw a new card
         printf("Wollen Sie eine weitere Karte ziehen? (j/n): ");
-        scanf(" %c", &choice);
+        if (fgets(choice, sizeof(choice), stdin) == NULL) {
+            printf("Fehler bei der Eingabe.\n");
+            continue;
+        }
 
-        if (choice == 'j') {
-            // Draw a card and increment the count
+        // Zeilenumbruch entfernen
+        choice[strcspn(choice, "\n")] = '\0';
+
+        if (strcmp(choice, "j") == 0) {
+            // Karte ziehen und Zähler erhöhen
             player[*playerCardCount] = deck[*cardIndex];
             (*playerCardCount)++;
             (*cardIndex)++;
 
-            // After drawing a card, check if the player's hand value is 21 or more.
+            // Handwert erneut berechnen
             currentHandValue = handValue(player, *playerCardCount);
             if (currentHandValue >= 21) {
                 break;
             }
-        } else if (choice == 'n') {
-            ziehen = false;
+        } else if (strcmp(choice, "n") == 0) {
+            ziehen = false;  // Spieler möchte keine Karte mehr
         } else {
             printf("Bitte geben Sie eine richtige Eingabe ein!\n");
         }
