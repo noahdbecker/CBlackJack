@@ -236,7 +236,6 @@ int main() {
 
     // call function `initializeDeck` to initialize the deck of cards
     initializeDeck(deck);
-    shuffleDeck(deck);
 
     // call function `choosePlayer` to choose the number of players
     int numPlayers = choosePlayer();
@@ -247,6 +246,9 @@ int main() {
     int dealerCardCount = CARDS_PER_PLAYER;
 
     while (playing) {
+        // shuffle deck new every time
+        shuffleDeck(deck);
+
         printf("\n────────────────────\n");
 
         // call function `dealCards` to deal the first 2 cards to the players and the dealer
