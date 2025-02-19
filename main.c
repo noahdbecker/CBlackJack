@@ -78,7 +78,7 @@ int choosePlayer() {
     Dealing the first 2 cards to the players and the dealer
     Cards of the player are shown, the dealer's second card is hidden
 */
-void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS][TOTAL_CARDS], Card dealer[2]) {
+void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2]) {
     int cardIndex = 0;
     for (int player = 0; player < numPlayers; player++) {
         printf("Spieler %d:\n", player + 1);
@@ -228,7 +228,7 @@ int main() {
     int numPlayers = choosePlayer();
 
     // initialize the players and the dealer
-    Card players[MAX_PLAYERS][TOTAL_CARDS];
+    Card players[MAX_PLAYERS+1][TOTAL_CARDS];
     Card dealer[CARDS_PER_PLAYER];
     int dealerCardCount = CARDS_PER_PLAYER;
 
