@@ -19,14 +19,14 @@
 /*
     Text Styling
 */
-#define TEXT_UNDERLINE "\e[4m"
-#define TEXT_BOLD_UNDERLINE "\e[1;4m"
-#define TEXT_BOLD "\e[1m"
-#define TEXT_GREEN "\e[32m"
-#define TEXT_YELLOW "\e[33m"
-#define TEXT_RED "\e[31m"
-#define TEXT_BLINKING "\e[5m"
-#define TEXT_RESET "\e[0m"
+#define TEXT_UNDERLINE "\x1b[4m"
+#define TEXT_BOLD_UNDERLINE "\x1b[1;4m"
+#define TEXT_BOLD "\x1b[1m"
+#define TEXT_GREEN "\x1b[32m"
+#define TEXT_YELLOW "\x1b[33m"
+#define TEXT_RED "\x1b[31m"
+#define TEXT_BLINKING "\x1b[5m"
+#define TEXT_RESET "\x1b[0m"
 
 /*
     Define the structure of a card
