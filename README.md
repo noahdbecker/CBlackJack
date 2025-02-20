@@ -1,5 +1,14 @@
 # CBlackJack
 
+<table>
+<tr><th>Autoren</th><td>Jan Kruske, Felix Schulz, Noah Becker</td></tr>
+<tr><th>Dozent</th><td>Dr. Jonas Fritzsch</td></tr>
+<tr><th>Studiengang/Kurs</th><td>B. Sc. Informatik – Cyber Security TINF24F</td></tr>
+<tr><th>Anlass</th><td>Entwurf und Implementierung einer Anwendung in C als Programmierprojekt</td></tr>
+<tr><th>Bearbeitungszeitraum</th><td>05.02.25 - 24.02.2025</td></tr>
+<tr><th>Abgabedatum</th><td>24.02.2025</td></tr>
+</table>
+
 Dieses Projekt ist eine Simulation des Kartenspiels Blackjack. Es ermöglicht bis zu 6 Spielern, gegen einen Dealer anzutreten und das Spiel zu spielen. Das Projekt wurde in C entwickelt und verwendet ANSI Escape-Sequenzen für die Textformatierung in der Konsole.
 
 ## Inhaltsverzeichnis
