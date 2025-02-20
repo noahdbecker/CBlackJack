@@ -191,22 +191,22 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
             continue;
         }
 
-        // Zeilenumbruch entfernen
+        // remove line break
         choice[strcspn(choice, "\n")] = '\0';
 
         if (strcmp(choice, "j") == 0) {
-            // Karte ziehen und Zähler erhöhen
+            // draw card and increase card count
             player[*playerCardCount] = deck[*cardIndex];
             (*playerCardCount)++;
             (*cardIndex)++;
 
-            // Handwert erneut berechnen
+            // calculate hand value
             currentHandValue = handValue(player, *playerCardCount);
             if (currentHandValue >= 21) {
                 break;
             }
         } else if (strcmp(choice, "n") == 0) {
-            ziehen = false;  // Spieler möchte keine Karte mehr
+            ziehen = false;  // player don't want new card
         } else {
             printf("Bitte geben Sie eine richtige Eingabe ein!\n");
         }
@@ -318,22 +318,31 @@ int main() {
 
         printf("════════════════════\n");
 
-        char choice = '\0';
-        while (choice != 'j' && choice != 'n') {
-            printf("\nWollen Sie erneut spielen? (j/n) ");
-            scanf(" %c", &choice);
 
-            if (choice == 'j') {
-                playing = true;
-            } else if (choice == 'n') {
-                playing = false;
+        /*
+            play again?
+        */
+        char choice;
+        bool validInput = false;
+
+        while (!validInput) {
+            printf("Wollen Sie erneut spielen (j/n)? ");
+            int result = scanf(" %c", &choice);
+
+            while (getchar() != '\n');
+
+            if (result == 1 && (choice == 'j' || choice == 'n')) {
+                playing = (choice == 'j');
+                validInput = true;
             } else {
-                printf("Bitte geben Sie eine Eingabe ein!\n");
-                choice = '\0';
+                printf("Ungültige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
             }
         }
     }
 
+    /*
+        thx for playing ❤️
+    */
     printf("\n\n═════════════════════════════════════\n");
     printf("  ❤️ Vielen Dank für's spielen! ❤️");
     printf("\n═════════════════════════════════════\n\n");
