@@ -16,16 +16,13 @@
 3. [Anwenderdokumentation](#anwenderdokumentation)
 4. [Entwicklerdokumentation](#entwicklerdokumentation)
 
-Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spielern, gegen einen Dealer anzutreten. Spieler können Wetteinsätze zwischen 2 € und 500 € platzieren. Das Spiel folgt den klassischen Blackjack-Regeln, wobei der Spieler gewinnt, indem er näher an 21 kommt als der Dealer, ohne den Wert zu überschreiten. Der Dealer trifft Entscheidungen basierend auf einem eigenem Algorythmus, welcher vorgibt eine Karte nachzuziehen, wenn der Wert der eigenen Karten unter 17 liegt.
-
-
 ## Projektbeschreibung
-Dieses Projekt ist eine einfache Konsolenanwendung, die das Blackjack-Spiel für mehrere Spieler simuliert. Die Spieler können Karten ziehen, und der Dealer spielt gemäß den traditionellen Blackjack-Regeln. Das Ziel ist es, so nah wie möglich an 21 Punkte zu kommen, ohne diese zu überschreiten.
+Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spielern, gegen einen Dealer anzutreten. Spieler können Wetteinsätze zwischen 2 € und 500 € platzieren. Das Spiel folgt den klassischen Blackjack-Regeln, wobei der Spieler gewinnt, indem er näher an 21 kommt als der Dealer, ohne den Wert zu überschreiten. Der Dealer trifft Entscheidungen basierend auf einem eigenem Algorythmus, welcher vorgibt eine Karte nachzuziehen, wenn der Wert der eigenen Karten unter 17 liegt.
 
 ## Installation
 1. **Repository klonen**:
    ```bash
-   git clone https://github.com/dein-benutzername/Blackjack-Simulation.git
+   git clone https://github.com/noahdbecker/CBlackJack.git
 
 ## Anwenderdokumentation
 ### Einführung
