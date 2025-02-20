@@ -110,8 +110,18 @@ int choosePlayer() {
 
 void playerBalance(int numPlayers) {
     for (int i = 1; i <= numPlayers; i++) {
-        int Balance[2] = { i, BALANCE_PER_PLAYER };
+        int Balance[numPlayers][3] = { i, BALANCE_PER_PLAYER,0 };
     }
+}
+void playerBet(int Balance[][], int numPlayers) {
+    char input[20];
+    for (int player = 1; player < numPlayers; player++) {
+        printf("Wie viel Geld wollen sie setzen Spieler %d?", player);
+        fgets(input, sizeof(input), stdin);
+        Balance[player-1][2] = strtol(input, NULL, 10);
+        printf("Sie haben %d€ gesetzt.", Balance[player-1][2]);
+    }
+
 }
 /*
     Dealing the first 2 cards to the players and the dealer
@@ -311,6 +321,7 @@ int main() {
     Card players[MAX_PLAYERS+1][TOTAL_CARDS];
     Card dealer[CARDS_PER_PLAYER];
     int dealerCardCount = CARDS_PER_PLAYER;
+    playerBalance(numPlayers);
 
     while (playing) {
         // shuffle deck new every time
