@@ -96,7 +96,7 @@ int choosePlayer() {
         fgets(input, sizeof(input), stdin);
         numPlayers = strtol(input, NULL, 10);
 
-        if (numPlayers > 0 && numPlayers < MAX_PLAYERS) {
+        if (numPlayers > 0 && numPlayers <= MAX_PLAYERS) {
             validInput = true;
         } else if (numPlayers < 1 || numPlayers > MAX_PLAYERS) {
             printf("Die Spieleranzahl muss zwischen 1 und %d liegen.\n", MAX_PLAYERS);
