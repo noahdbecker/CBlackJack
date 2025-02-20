@@ -86,13 +86,23 @@ void shuffleDeck(Card *deck) {
     < 1 and > the amount of maximum players (6) isn't possible
 */
 int choosePlayer() {
+    char input[20];
     int numPlayers;
-    printf("Geben Sie die Anzahl der Spieler ein: ");
-    scanf("%d", &numPlayers);
-    if (numPlayers < 1 || numPlayers > MAX_PLAYERS) {
-        printf("Die maximale Spieleranzahl ist %d.\n", MAX_PLAYERS);
-        exit(0);
+
+    bool validInput = false;
+
+    while (!validInput) {
+        printf("Geben Sie die Anzahl der Spieler ein: ");
+        fgets(input, sizeof(input), stdin);
+        numPlayers = strtol(input, NULL, 10);
+
+        if (numPlayers > 0 && numPlayers < MAX_PLAYERS) {
+            validInput = true;
+        } else if (numPlayers < 1 || numPlayers > MAX_PLAYERS) {
+            printf("Die Spieleranzahl muss zwischen 1 und %d liegen.\n", MAX_PLAYERS);
+        }
     }
+
     return numPlayers;
 }
 
