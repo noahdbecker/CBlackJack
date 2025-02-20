@@ -29,6 +29,14 @@
 #define TEXT_RESET "\x1b[0m"
 
 /*
+    Input validator (y/n)
+*/
+bool inputValidation(char *input) {
+    return (strlen(input) == 1 && (*input == 'j' || *input == 'n'));
+}
+
+
+/*
     Define the structure of a card
 */
 typedef struct {
@@ -168,7 +176,6 @@ void printHand(Card hand[], int numCards) {
     If the value of the hand is over 21, the player's turn is over
 */
 void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
-    char choice[10];
     bool ziehen = true;
 
     while (ziehen) {
@@ -180,35 +187,38 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int *playerCardCount)
         printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, currentHandValue);
 
         // If the player's hand is already 21 or more, they can't draw further.        
-        if (currentHandValue >= 21) {
+        if (blackjack(currentHandValue) || checkBust(currentHandValue)) {
             break;
         }
 
-        // Ask if the player wants to draw a new card
-        printf("Wollen Sie eine weitere Karte ziehen? (j/n): ");
-        if (fgets(choice, sizeof(choice), stdin) == NULL) {
-            printf("Fehler bei der Eingabe.\n");
-            continue;
-        }
+        char furtherCards[10];
+        bool validInput = false;
 
-        // remove line break
-        choice[strcspn(choice, "\n")] = '\0';
+        while (!validInput) {
+            printf("Wollen Sie eine weitere Karte ziehen? (j/n)? ");
+            scanf("%9s", furtherCards);
+            while (getchar() != '\n');
 
-        if (strcmp(choice, "j") == 0) {
-            // draw card and increase card count
-            player[*playerCardCount] = deck[*cardIndex];
-            (*playerCardCount)++;
-            (*cardIndex)++;
+            if (inputValidation(furtherCards)) {
+                validInput = true;
 
-            // calculate hand value
-            currentHandValue = handValue(player, *playerCardCount);
-            if (currentHandValue >= 21) {
-                break;
+                if (furtherCards[0] == 'j') {
+                    // draw card and increase card count
+                    player[*playerCardCount] = deck[*cardIndex];
+                    (*playerCardCount)++;
+                    (*cardIndex)++;
+
+                    // calculate hand value
+                    currentHandValue = handValue(player, *playerCardCount);
+                    if (checkBust(currentHandValue)) {
+                        break;
+                    }
+                } else if (furtherCards[0] == 'n') {
+                    ziehen = false;  // player don't want new card
+                }
+            } else {
+                printf("Bitte geben Sie eine gültige Eingabe ('j' oder 'n') ein!\n");
             }
-        } else if (strcmp(choice, "n") == 0) {
-            ziehen = false;  // player don't want new card
-        } else {
-            printf("Bitte geben Sie eine richtige Eingabe ein!\n");
         }
     }
 
@@ -322,17 +332,16 @@ int main() {
         /*
             play again?
         */
-        char choice;
+        char input[10];
         bool validInput = false;
 
         while (!validInput) {
             printf("Wollen Sie erneut spielen (j/n)? ");
-            int result = scanf(" %c", &choice);
-
+            scanf("%9s", input);
             while (getchar() != '\n');
 
-            if (result == 1 && (choice == 'j' || choice == 'n')) {
-                playing = (choice == 'j');
+            if (inputValidation(input)) {
+                playing = (input[0] == 'j');
                 validInput = true;
             } else {
                 printf("Ungültige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
