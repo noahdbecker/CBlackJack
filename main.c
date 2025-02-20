@@ -298,7 +298,8 @@ int main() {
 
         // Players' turns
         for (int player = 0; player < numPlayers; player++) {
-            printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
+            //printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
+            printf("\u2583\u2585\u2586\u2588 \uC6C3 %d \u2588\u2586\u2585\u2583\n", player + 1);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
             int playerCardCount = CARDS_PER_PLAYER;
             playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount);
