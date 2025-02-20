@@ -10,13 +10,14 @@
 <tr><th>Präsentation</th><td>26.02.2025</td></tr>
 </table>
 
-Dieses Projekt ist eine Simulation des Kartenspiels Blackjack. Es ermöglicht bis zu 6 Spielern, gegen einen Dealer anzutreten und das Spiel zu spielen. Das Projekt wurde in C entwickelt und verwendet ANSI Escape-Sequenzen für die Textformatierung in der Konsole.
-
 ## Inhaltsverzeichnis
 1. [Projektbeschreibung](#projektbeschreibung)
 2. [Installation](#installation)
 3. [Anwenderdokumentation](#anwenderdokumentation)
 4. [Entwicklerdokumentation](#entwicklerdokumentation)
+
+Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spielern, gegen einen Dealer anzutreten. Spieler können Wetteinsätze zwischen 2 € und 500 € platzieren. Das Spiel folgt den klassischen Blackjack-Regeln, wobei der Spieler gewinnt, indem er näher an 21 kommt als der Dealer, ohne den Wert zu überschreiten. Der Dealer trifft Entscheidungen basierend auf einem eigenem Algorythmus, welcher vorgibt eine Karte nachzuziehen, wenn der Wert der eigenen Karten unter 17 liegt.
+
 
 ## Projektbeschreibung
 Dieses Projekt ist eine einfache Konsolenanwendung, die das Blackjack-Spiel für mehrere Spieler simuliert. Die Spieler können Karten ziehen, und der Dealer spielt gemäß den traditionellen Blackjack-Regeln. Das Ziel ist es, so nah wie möglich an 21 Punkte zu kommen, ohne diese zu überschreiten.
