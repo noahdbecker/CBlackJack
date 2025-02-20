@@ -15,6 +15,7 @@
 #define TOTAL_CARDS (DECK_SIZE * TOTAL_DECKS)
 #define MAX_PLAYERS 6
 #define CARDS_PER_PLAYER 2
+#define BALANCE_PER_PLAYER 5000
 
 /*
     Text Styling
@@ -105,7 +106,13 @@ int choosePlayer() {
 
     return numPlayers;
 }
+// Initialize every player balance
 
+void playerBalance(int numPlayers) {
+    for (int i = 1; i <= numPlayers; i++) {
+        int Balance[2] = { i, BALANCE_PER_PLAYER };
+    }
+}
 /*
     Dealing the first 2 cards to the players and the dealer
     Cards of the player are shown, the dealer's second card is hidden
@@ -264,11 +271,29 @@ void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount)
         printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
     }
 }
-
+//     The winner is determined by the value of the hand
+void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers, Card dealer[], int dealerCardCount) {
+    for (int player = 0; player < numPlayers; player++) {
+        int playerValue = handValue(players[player], TOTAL_CARDS);
+        int dealerValue = handValue(dealer, dealerCardCount);
+        printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
+        if (playerValue > 21) {
+            printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
+        } else if (dealerValue > 21) {
+            printf("Dealer hat ueberkauft. Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+        } else if (playerValue > dealerValue) {
+            printf("Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+        } else if (playerValue < dealerValue) {
+            printf(TEXT_RED "Dealer gewinnt gegen Spieler %d.\n" TEXT_RESET, player + 1);
+        } else {
+            printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
+        }
+        printf("\n");
+    }
+}
 /*
     Main function
     The game is played by the players and the dealer
-    The winner is determined by the value of the hand
 */
 int main() {
     bool playing = true;
@@ -318,23 +343,8 @@ int main() {
         printf("*****************\n\n");
 
         // Determine the winner
-        for (int player = 0; player < numPlayers; player++) {
-            int playerValue = handValue(players[player], TOTAL_CARDS);
-            int dealerValue = handValue(dealer, dealerCardCount);
-            printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
-            if (playerValue > 21) {
-                printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
-            } else if (dealerValue > 21) {
-                printf("Dealer hat ueberkauft. Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
-            } else if (playerValue > dealerValue) {
-                printf("Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
-            } else if (playerValue < dealerValue) {
-                printf(TEXT_RED "Dealer gewinnt gegen Spieler %d.\n" TEXT_RESET, player + 1);
-            } else {
-                printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
-            }
-            printf("\n");
-        }
+        determineWinner(players, numPlayers, dealer, dealerCardCount);
+
 
         printf("════════════════════\n");
 
