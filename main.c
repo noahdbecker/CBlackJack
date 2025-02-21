@@ -117,15 +117,15 @@ void playerBalance(int numPlayers) {
     Dealing the first 2 cards to the players and the dealer
     Cards of the player are shown, the dealer's second card is hidden
 */
-void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2]) {
+void dealCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2], int playerCardCount[MAX_PLAYERS]) {
     int cardIndex = 0;
     for (int player = 0; player < numPlayers; player++) {
         printf("-- Spieler %d:\n", player + 1);
         for (int card = 0; card < CARDS_PER_PLAYER; card++) {
-            players[player][card] = deck[cardIndex];
+            players[player][card] = deck[cardIndex++];
             printf("  %s %s\n", deck[cardIndex].rank, deck[cardIndex].suit);
-            cardIndex++;
         }
+        playerCardCount[player] = CARDS_PER_PLAYER;
         printf("\n");
     }
 
@@ -272,11 +272,13 @@ void dealerTurn(Card *deck, int *cardIndex, Card dealer[], int *dealerCardCount)
     }
 }
 //     The winner is determined by the value of the hand
-void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers, Card dealer[], int dealerCardCount) {
+void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers, Card dealer[], int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
+    int dealerValue = handValue(dealer, dealerCardCount);
+
     for (int player = 0; player < numPlayers; player++) {
-        int playerValue = handValue(players[player], TOTAL_CARDS);
-        int dealerValue = handValue(dealer, dealerCardCount);
+        int playerValue = handValue(players[player], playerCardCount[player]);
         printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
+
         if (playerValue > 21) {
             printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
         } else if (dealerValue > 21) {
@@ -310,6 +312,7 @@ int main() {
     // initialize the players and the dealer
     Card players[MAX_PLAYERS+1][TOTAL_CARDS];
     Card dealer[CARDS_PER_PLAYER];
+    int playerCardCount[MAX_PLAYERS];
     int dealerCardCount = CARDS_PER_PLAYER;
 
     while (playing) {
@@ -319,14 +322,13 @@ int main() {
         printf("\n────────────────────\n");
 
         // call function `dealCards` to deal the first 2 cards to the players and the dealer
-        dealCards(deck, numPlayers, players, dealer);
+        dealCards(deck, numPlayers, players, dealer, playerCardCount);
 
         // Players' turns
         for (int player = 0; player < numPlayers; player++) {
             printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
-            int playerCardCount = CARDS_PER_PLAYER;
-            playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount);
+            playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount[player]);
             printf("\n");
         }
 
@@ -343,7 +345,7 @@ int main() {
         printf("*****************\n\n");
 
         // Determine the winner
-        determineWinner(players, numPlayers, dealer, dealerCardCount);
+        determineWinner(players, numPlayers, dealer, dealerCardCount, playerCardCount);
 
 
         printf("════════════════════\n");
