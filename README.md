@@ -23,6 +23,10 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
 1. **Repository klonen**:
    ```bash
    git clone https://github.com/noahdbecker/CBlackJack.git
+2. **In das Projektverzeichnis navigieren**:
+3. **Main.exe ausführen**:
+   ```bash
+   main.exe
 
 ## Anwenderdokumentation
 ### Einführung
