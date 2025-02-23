@@ -186,6 +186,7 @@ void dealFirstCards(Card *deck, int numPlayers, Card players[MAX_PLAYERS+1][TOTA
         printf("-- Spieler %d:\n", player + 1);
         for (int card = 0; card < CARDS_PER_PLAYER; card++) {
             drawCard(deck, cardIndex, players[player], &playerCardCount[player]);
+            printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
         }
         printf("\n");
     }
