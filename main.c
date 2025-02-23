@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 
 /*
@@ -16,8 +17,8 @@
 #define MAX_PLAYERS 6
 #define CARDS_PER_PLAYER 2
 #define BALANCE_PER_PLAYER 5000
-#define MIN_BET 10
-#define MAX_BET 1000
+#define MIN_BET 2
+#define MAX_BET 500
 
 /*
     Text Styling
@@ -124,38 +125,49 @@ PlayerConfig choosePlayer() {
 }
 // Initialize every player & bot balance
 
-void Balance(int numPlayers, int numBots, int balancePlayers[][3], int balanceBots[][3]) {
-    for (int i = 0; i < numPlayers; i++) {
+void Balance(int numPlayers, int numBots, int **balancePlayers) {
+    for (int i = 0; i < numPlayers+numBots; i++) {
         balancePlayers[i][0] = i + 1;  // Spieler-ID
         balancePlayers[i][1] = BALANCE_PER_PLAYER; // Startbalance
         balancePlayers[i][2] = 0;  // Sonstige Werte
     }
-
-    for (int i = 0; i < numBots; i++) {
-        balanceBots[i][0] = i + 1;
-        balanceBots[i][1] = BALANCE_PER_PLAYER;
-        balanceBots[i][2] = 0;
-    }
 }
 
+
 // Initialize every bet
-void playerBet(int balancePlayer[][3], int numPlayers, int balanceBots[][3], int numBots) {
+void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
     char input[20];
 
     // Spieler setzen ihren Einsatz
     for (int player = 0; player < numPlayers; player++) {
-        printf("Wie viel Geld wollen Sie setzen, Spieler %d? ", player + 1);
-        fgets(input, sizeof(input), stdin);
-        balancePlayer[player][2] = strtol(input, NULL, 10);
+        do {
+            printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€) ", player + 1, MIN_BET, MAX_BET);
+            fgets(input, sizeof(input), stdin);
+            input[strcspn(input, "\n")] = 0;  // Entfernt das '\n'
+            balancePlayer[player][2] = strtol(input, NULL, 10);
+
+            if (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]) {
+                printf("Ungültiger Einsatz! Bitte setzen Sie zwischen %d€ und %d€, aber nicht mehr als Ihr Guthaben (%d€).\n",
+                        MIN_BET, MAX_BET, balancePlayer[player][1]);
+            }
+        } while (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]);
+
         printf("Sie haben %d€ gesetzt.\n", balancePlayer[player][2]);
     }
 
-    // Bots setzen zufällig zwischen MIN_BET und MAX_BET
-    for (int bot = 0; bot < numBots; bot++) {
-        balanceBots[bot][2] = MIN_BET + rand() % (MAX_BET - MIN_BET + 1);
-        printf("Bot %d hat %d€ gesetzt.\n", bot + 1, balanceBots[bot][2]);
+    // Bots setzen ihren Einsatz zufällig zwischen MIN_BET und MAX_BET, aber maximal ihr Guthaben
+    for (int bot = numPlayers; bot < numBots + numPlayers; bot++) {
+        if (balancePlayer[bot][1] < MIN_BET) {
+            balancePlayer[bot][2] = 0;  // Bot setzt nichts, wenn er nicht genug hat
+            printf("Bot %d hat nicht genug Geld zum Setzen und setzt nichts.\n", bot + 1);
+        } else {
+            int maxBotBet = (balancePlayer[bot][1] < MAX_BET) ? balancePlayer[bot][1] : MAX_BET;
+            balancePlayer[bot][2] = MIN_BET + rand() % (maxBotBet - MIN_BET + 1);
+            printf("Bot %d hat %d€ gesetzt.\n", bot + 1, balancePlayer[bot][2]);
+        }
     }
 }
+
 /*
     Dealing the first 2 cards to the players and the dealer
     Cards of the player are shown, the dealer's second card is hidden
@@ -348,6 +360,54 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers,
         printf("\n");
     }
 }
+
+// Balance development
+
+
+
+
+// Balance development
+void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int player, int balancePlayers[][3], Card *dealer, int dealerCardCount) {
+    if (!balancePlayers || !balancePlayers[player]) {
+        printf("ERROR: Ungültiger Speicherzugriff in balanceDevelopment für Spieler %d\n", player);
+        return;
+    }
+
+    int playerValue = handValue(players[player], TOTAL_CARDS);
+    int dealerValue = handValue(dealer, dealerCardCount);
+    int bet = balancePlayers[player][2];
+
+
+
+    printf("DEBUG: Spieler %d | Guthaben: %d€, Einsatz: %d€, Handwert: %d, Dealer: %d\n",
+           player + 1, balancePlayers[player][1], bet, playerValue, dealerValue);
+
+    // Überprüfen, ob Spieler Blackjack hat (2 Karten, Wert genau 21)
+    if (handValue((Card[]){players[player][0], players[player][1]}, 2) == 21) {
+        int gewinn = (int)round(bet * 1.5);  // Blackjack zahlt 3:2 aus
+        balancePlayers[player][1] += gewinn;
+        printf("Spieler %d hat ein BLACKJACK! Neue Balance: %d€ (Gewinn: +%d€)\n", player + 1, balancePlayers[player][1], gewinn);
+    }
+    // Spieler gewinnt gegen Dealer
+    else if (dealerValue > 21 || playerValue > dealerValue) {
+        balancePlayers[player][1] += bet;  // Spieler bekommt den doppelten Einsatz zurück (Gewinn + Einsatz)
+        printf("Spieler %d gewinnt! Neue Balance: %d€ (+%d€)\n", player + 1, balancePlayers[player][1], bet);
+    }
+    // Spieler verliert
+    else if (playerValue < dealerValue) {
+        balancePlayers[player][1] -= bet;
+        printf("Spieler %d verliert! Neue Balance: %d€ (-%d€)\n", player + 1, balancePlayers[player][1], bet);
+    }
+    // Unentschieden - Geld zurück
+    else {
+        balancePlayers[player][1] += bet;  // Geld zurück
+        printf("Spieler %d unentschieden! Balance bleibt bei %d€ (Einsatz zurück)\n", player + 1, balancePlayers[player][1]);
+    }
+    // Setze den Einsatz zurück auf 0 nach Berechnung
+    balancePlayers[player][2] = 0;
+}
+
+
 /*
     Main function
     The game is played by the players and the dealer
@@ -357,78 +417,82 @@ int main() {
     bool playing = true;
 
     Card deck[TOTAL_CARDS];
-    srand(time(NULL));
+    initializeDeck(deck); // call function `initializeDeck` to initialize the deck of cards
 
-    // call function `initializeDeck` to initialize the deck of cards
-    initializeDeck(deck);
-
-    // call function `choosePlayer` to choose the number of players
-    PlayerConfig config = choosePlayer();
+    PlayerConfig config = choosePlayer(); // call function `choosePlayer` to choose the number of players
     int numPlayers = config.numPlayers;
     int numBots = config.numBots;
 
-    int balancePlayers[numPlayers][3];
-    int balanceBots[numBots][3];
+    int **balancePlayers = malloc(numPlayers * sizeof(int *));
+    for (int i = 0; i < numPlayers; i++) {
+        balancePlayers[i] = malloc(3 * sizeof(int));
+        printf("DEBUG: Speicher für balancePlayers[%d] zugewiesen, Adresse: %p\n", i, (void*)balancePlayers[i]);
+    }
 
-    // initialize the players and the dealer
+    for (int i = 0; i < numPlayers; i++) balancePlayers[i] = malloc(3 * sizeof(int));
+
     Card players[MAX_PLAYERS+1][TOTAL_CARDS];
     Card dealer[CARDS_PER_PLAYER];
     int dealerCardCount = CARDS_PER_PLAYER;
-    Balance(numPlayers, numBots, balancePlayers, balanceBots);
+
+    Balance(numPlayers, numBots, balancePlayers);
+
 
     while (playing) {
-        // shuffle deck new every time
-        shuffleDeck(deck);
-        playerBet(balancePlayers, numPlayers, balanceBots, numBots);
+        shuffleDeck(deck); // shuffle deck new every time
+        playerBet(balancePlayers, numPlayers, numBots);
 
         printf("\n────────────────────\n");
+        dealCards(deck, numPlayers, numBots, players, dealer); // call function `dealCards` to deal the first 2 cards to the players and the dealer
 
-        // call function `dealCards` to deal the first 2 cards to the players and the dealer
-        dealCards(deck, numPlayers,numBots, players, dealer);
-
-        // Players' turns
         for (int player = 0; player < numPlayers; player++) {
             printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
             int playerCardCount = CARDS_PER_PLAYER;
-            playerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[player], &playerCardCount);
+            int deckIndex = CARDS_PER_PLAYER * (numPlayers + numBots) + CARDS_PER_PLAYER;
+            playerTurn(deck, &deckIndex, players[player], &playerCardCount);
             printf("\n");
         }
 
-        // Bots turn
-        for (int bot = numPlayers-1; bot < (numPlayers + numBots); bot++) {
+        for (int bot = numPlayers; bot < (numPlayers + numBots); bot++) {
             printf("▃▅▆█ 웃 %d █▆▅▃\n", bot + 1);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, bot + 1);
             int playerCardCount = CARDS_PER_PLAYER;
-            botTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, players[bot], &playerCardCount);
+            int deckIndex = CARDS_PER_PLAYER * (numPlayers + numBots) + CARDS_PER_PLAYER;
+            botTurn(deck, &deckIndex, players[bot], &playerCardCount);
             printf("\n");
         }
 
-        // Dealer's turn
-        printf("Dealer ist am Zug:\n");
-        dealerTurn(deck, &(int){CARDS_PER_PLAYER * numPlayers + CARDS_PER_PLAYER}, dealer, &dealerCardCount);
+        printf("Dealer ist am Zug:\n"); // Dealer's turn
+        int deckIndex = CARDS_PER_PLAYER * (numPlayers + numBots) + CARDS_PER_PLAYER;
+        dealerTurn(deck, &deckIndex, dealer, &dealerCardCount);
 
         printf("\n\n");
         printf("════════════════════\n\n");
-
-        // Dealer summary
         printf("*****************\n");
-        printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount));
+        printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount)); // Dealer summary
         printf("*****************\n\n");
 
-        // Determine the winner
-        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount);
-
-
+        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount); // Determine the winner
         printf("════════════════════\n");
 
+        printf("\n\n");
+        printf("════════════════════\n\n");
+        printf("\n");
 
-        /*
-            play again?
-        */
+        for (int player = 0; player < (numPlayers + numBots); player++) {
+            printf("DEBUG: Rufe balanceDevelopment für Spieler %d auf | balancePlayers[%d] Adresse: %p\n",
+           player+1, player, (void*)balancePlayers[player]);
+
+            balanceDevelopment(players, player, balancePlayers, dealer, dealerCardCount); // Balance development
+            printf("Spieler %d hat %d€\n\n", player+1, balancePlayers[player][1]);
+        }
+        printf("════════════════════\n\n");
+
+
+
         char input[10];
         bool validInput = false;
-
         while (!validInput) {
             printf("Wollen Sie erneut spielen (j/n)? ");
             scanf("%9s", input);
@@ -443,11 +507,13 @@ int main() {
         }
     }
 
-    /*
-        thx for playing ❤️
-    */
     printf("\n\n═════════════════════════════════════\n");
-    printf("  ❤️ Vielen Dank für's spielen! ❤️");
+    printf("  ❤️ Vielen Dank für's spielen! ❤️"); // thx for playing ❤️
     printf("\n═════════════════════════════════════\n\n");
+
+    for (int i = 0; i < numPlayers; i++) free(balancePlayers[i]);
+    free(balancePlayers);
+
     return 0;
 }
+
