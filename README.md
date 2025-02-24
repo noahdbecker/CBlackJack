@@ -40,7 +40,7 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
    BlackJack
    ```
 
-#### Optional
+#### Optional (wenn WSL (Windows Subsystem for Linux) installiert ist) bzw. ein geeigneter Compiler installiert ist)
 4. **Das Makefile ausführen**:
    ```
    make
