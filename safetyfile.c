@@ -144,17 +144,18 @@ void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
     // players place their bets
     for (int player = 0; player < numPlayers; player++) {
         do {
-            printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€) ", player + 1, MIN_BET, MAX_BET);
+            printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d Euro - %d Euro) ", player + 1, MIN_BET, MAX_BET);
             fgets(input, sizeof(input), stdin);
             input[strcspn(input, "\n")] = 0;
             balancePlayer[player][2] = strtol(input, NULL, 10);
 
             if (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]) {
-                printf("Ungueltiger Einsatz! Bitte setzen Sie zwischen %d€ und %d€, aber nicht mehr als Ihr Guthaben (%d€).\n", MIN_BET, MAX_BET, balancePlayer[player][1]);
+                printf("Ungueltiger Einsatz! Bitte setzen Sie zwischen %d Euro"
+                       " und %d Euro, aber nicht mehr als Ihr Guthaben (%d Euro).\n", MIN_BET, MAX_BET, balancePlayer[player][1]);
             }
         } while (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]);
 
-        printf("Sie haben %d€ gesetzt.\n", balancePlayer[player][2]);
+        printf("Sie haben %d Euro gesetzt.\n", balancePlayer[player][2]);
     }
 
     // bots place random bets
@@ -165,7 +166,7 @@ void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
         } else {
             int maxBotBet = (balancePlayer[bot][1] < MAX_BET) ? balancePlayer[bot][1] : MAX_BET;
             balancePlayer[bot][2] = MIN_BET + rand() % (maxBotBet - MIN_BET + 1);
-            printf("Bot %d hat %d€ gesetzt.\n", bot + 1, balancePlayer[bot][2]);
+            printf("Bot %d hat %d Euro gesetzt.\n", bot + 1, balancePlayer[bot][2]);
         }
     }
 }
@@ -207,7 +208,7 @@ void dealFirstCards(Card *deck, int numPlayers, int numBots, Card players[MAX_PL
     for (int card = 0; card < CARDS_PER_PLAYER; card++) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         if (card == 0) {
-            printf(TEXT_RED "  (?)\n" TEXT_RESET);
+            printf("  (?)\n");
         } else {
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
         }
@@ -271,7 +272,7 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) 
         // Display the current hand and value
         printf("Ihre Hand:\n");
         printHand(player, playerCardCount);
-        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, currentHandValue);
+        printf("Aktueller Wert: %d\n\n", currentHandValue);
 
         // If the player's hand is already 21 or more, they can't draw further.        
         if (blackjack(currentHandValue) || checkBust(currentHandValue)) {
@@ -310,15 +311,15 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) 
     // After the loop ends, print final hand and value
     printf("Ihre endgueltige Hand:\n");
     printHand(player, playerCardCount);
-    printf(TEXT_RESET TEXT_BOLD " ==> %d\n", handValue(player, playerCardCount));
+    printf(" ==> %d\n", handValue(player, playerCardCount));
 
     if (blackjack(handValue(player, playerCardCount))) {
-        printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
+        printf("Blackjack!" "\n");
     }
 
     if (checkBust(handValue(player, playerCardCount)))
     {
-        printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
+        printf("BUST!" "\n");
     }
 }
 
@@ -362,18 +363,18 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers,
     int dealerValue = handValue(dealer, dealerCardCount);
     for (int player = 0; player < (numPlayers + numBots); player++) {
         int playerValue = handValue(players[player], playerCardCount[player]);
-        printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
+        printf("Spieler %d hat " "%d Punkte%s" ".\n", player + 1, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
 
         if (playerValue > 21) {
-            printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
+            printf("Spieler %d hat " "ueberkauft.\n", player + 1);
         } else if (dealerValue > 21) {
-            printf("Dealer hat ueberkauft. Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+            printf("Dealer hat ueberkauft. Spieler %d " "gewinnt.\n" , player + 1);
         } else if (playerValue > dealerValue) {
-            printf("Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+            printf("Spieler %d " "gewinnt.\n" , player + 1);
         } else if (playerValue < dealerValue) {
-            printf(TEXT_RED "Dealer gewinnt gegen Spieler %d.\n" TEXT_RESET, player + 1);
+            printf("Dealer gewinnt gegen Spieler %d.\n" , player + 1);
         } else {
-            printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
+            printf("Spieler %d und der Dealer haben " "unentschieden.\n" , player + 1);
         }
         printf("\n");
     }
@@ -390,22 +391,22 @@ void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int player, 
     if (playerCardCount[player] == 2 && blackjack(playerValue)) {
         int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
         balancePlayers[player][1] += gewinn;
-        printf("Spieler %d hat ein BLACKJACK mit den ersten 2 Karten! Neue Balance: %d€ (Gewinn: +%d€)\n", player + 1, balancePlayers[player][1], gewinn);
+        printf("Spieler %d hat ein BLACKJACK mit den ersten 2 Karten! Neue Balance: %d Euro (Gewinn: +%d Euro)\n", player + 1, balancePlayers[player][1], gewinn);
     }
     // player wins against dealer
     else if (dealerValue > 21 || playerValue > dealerValue) {
         balancePlayers[player][1] += bet;  // pays double
-        printf("Spieler %d gewinnt! Neue Balance: %d€ (+%d€)\n", player + 1, balancePlayers[player][1], bet);
+        printf("Spieler %d gewinnt! Neue Balance: %d Euro (+%d Euro)\n", player + 1, balancePlayers[player][1], bet);
     }
     // player looses
     else if (playerValue < dealerValue) {
         balancePlayers[player][1] -= bet;
-        printf("Spieler %d verliert! Neue Balance: %d€ (-%d€)\n", player + 1, balancePlayers[player][1], bet);
+        printf("Spieler %d verliert! Neue Balance: %d Euro (-%d Euro)\n", player + 1, balancePlayers[player][1], bet);
     }
     // draw - money back
     else {
         balancePlayers[player][1] += bet;
-        printf("Spieler %d unentschieden! Balance bleibt bei %d€ (Einsatz zurück)\n", player + 1, balancePlayers[player][1]);
+        printf("Spieler %d unentschieden! Balance bleibt bei %d Euro (Einsatz zurueck)\n", player + 1, balancePlayers[player][1]);
     }
     // reset bet
     balancePlayers[player][2] = 0;
@@ -469,23 +470,19 @@ int main() {
         shuffleDeck(deck);
         playerBet(balancePlayers, numPlayers, numBots);
 
-        printf("\n────────────────────\n");
-
         // call function `dealFirstCards` to deal the first 2 cards to the players and the dealer
         dealFirstCards(deck, numPlayers, numBots, players, dealer, playerCardCount, &cardIndex, &dealerCardCount);
 
         // Players' turns
         for (int player = 0; player < numPlayers; player++) {
-            printf("%d\n", player + 1);
-            printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
-            playerTurn(deck, &cardIndex, players[player], playerCardCount[player]);
 
+            printf("Spieler %d ist am Zug:\n", player + 1);
+            playerTurn(deck, &cardIndex, players[player], playerCardCount[player]);
             printf("\n");
         }
 
         for (int bot = numPlayers; bot < (numPlayers + numBots); bot++) {
-            printf("%d\n", bot + 1 - numPlayers);
-            printf(TEXT_BOLD_UNDERLINE "Bot %d ist am Zug:\n" TEXT_RESET, bot + 1 - numPlayers);
+            printf("Bot %d ist am Zug:\n" , bot + 1 - numPlayers);
             botTurn(deck, &cardIndex, players[bot], &playerCardCount[bot]);
             printf("\n");
         }
@@ -498,7 +495,7 @@ int main() {
 
 
         printf("\n\n");
-        printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount)); // Dealer summary
+        printf("Dealer: " "%d Punkte\n", handValue(dealer, dealerCardCount)); // Dealer summary
 
         determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount); // Determine the winner
 
@@ -507,28 +504,26 @@ int main() {
 
         for (int player = 0; player < (numPlayers + numBots); player++) {
             balanceDevelopment(players, player, balancePlayers, dealer, dealerCardCount, playerCardCount); // Balance development
-            printf("Spieler %d hat %d€\n\n", player+1, balancePlayers[player][1]);
+            printf("Spieler %d hat %d Euro\n\n", player+1, balancePlayers[player][1]);
+            }
 
+            char input[10];
+            bool validInput = false;
+            while (!validInput) {
+                printf("Wollen Sie erneut spielen (j/n)? ");
+                scanf("%9s", input);
+                while (getchar() != '\n');
 
-
-        char input[10];
-        bool validInput = false;
-        while (!validInput) {
-            printf("Wollen Sie erneut spielen (j/n)? ");
-            scanf("%9s", input);
-            while (getchar() != '\n');
-
-            if (inputValidation(input)) {
-                playing = (input[0] == 'j');
-                validInput = true;
-            } else {
-                printf("Ungueltige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
+                if (inputValidation(input)) {
+                    playing = (input[0] == 'j');
+                    validInput = true;
+                } else {
+                    printf("Ungueltige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
+                }
             }
         }
-    }
 
-
-    printf("Vielen Dank für's spielen!"); // thx for playing 
+    printf("Vielen Dank fuer's spielen!"); // thx for playing
 
 
     for (int i = 0; i < numPlayers; i++) {
@@ -538,4 +533,3 @@ int main() {
 
     return 0;
 }
-
