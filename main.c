@@ -659,13 +659,12 @@ int main() {
         printf("\n");
         SLEEP(1000);
         printf("\n");
-        printf("════════════════════\n\n");
+        printf("════ Spielauswertung ════\n");
         printf("*****************\n");
         SLEEP(250);
         printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount)); // Dealer summary
         SLEEP(250);
         printf("*****************\n\n");
-
 
         determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount, balancePlayers); // Determine the winner
         printf("════════════════════\n");
