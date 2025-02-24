@@ -55,11 +55,11 @@ Der Spielzug der Spieler ist so aufgebaut, dass, angefangen bei Spieler 1, jeder
 
 Sobald jeder Spieler seine Züge beendet hat, wird die finale Hand der Spieler auf der Konsole ausgegeben und der Dealer beginnt mit seinem Spielzug. Er zieht neue Karten bis er den Wert 17 erreicht oder überschreitet und beendet dann seinen Spielzug. Zuletzt wird ausgewertet, welcher Spieler näher an der 21 dran ist als der Dealer und nicht über 21 besitzt.
 
-Hat der Dealer einen niedrigeren Wert als der Spieler und der Spieler übertrifft die 21 nicht, hat der Spieler einen 1:1-Gewinn erzielt.
-Hat der Dealer einen höheren Wert als der Spieler und der Dealer übertrifft die 21 nicht, hat der Spieler seinen Wetteinsatz verloren.
-Ist der Dealer über 21 und der Spieler nicht, gewinnt der Spieler einen 1:1-Gewinn.
-Ist der Dealer über 21 und der Spieler auch, verliert der Spieler seinen Einsatz.
-Haben Dealer und Spieler beide einen Blackjack, ist gleichstand und der Spieler bekommt seinen Einsatz wieder ausbezahlt - macht jedoch aber keinen Gewinn.
+Hat der Dealer einen niedrigeren Wert als der Spieler und der Spieler übertrifft die 21 nicht, hat der Spieler einen 1:1-Gewinn erzielt.<br>
+Hat der Dealer einen höheren Wert als der Spieler und der Dealer übertrifft die 21 nicht, hat der Spieler seinen Wetteinsatz verloren.<br>
+Ist der Dealer über 21 und der Spieler nicht, gewinnt der Spieler einen 1:1-Gewinn.<br>
+Ist der Dealer über 21 und der Spieler auch, verliert der Spieler seinen Einsatz.<br>
+Haben Dealer und Spieler beide einen Blackjack, ist gleichstand und der Spieler bekommt seinen Einsatz wieder ausbezahlt - macht jedoch aber keinen Gewinn.<br>
 Hat ein Spieler mit den ersten beiden ausgeteilten Karten einen Blackjack erreicht (= natürlicher Blackjack) wird er 3:2 ausbezahlt.
 
 Die Main-Funktion initialisiert die Karten, Spieler und die 'balance', bestimmt den Spielverlauf und prüft am Ende, ob der Spieler ein neues Spiel starten möchte.
