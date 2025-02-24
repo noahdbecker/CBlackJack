@@ -217,7 +217,7 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
     for (int player = 0; player < numPlayers; player++) {
         do {
             char prompt[100];
-            snprintf(prompt, sizeof(prompt), "Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€ | Guthaben: %d€): ", player + 1, MIN_BET, MAX_BET, balancePlayer[player][1]);
+            snprintf(prompt, sizeof(prompt), "\nWie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€ | Guthaben: %d€): ", player + 1, MIN_BET, MAX_BET, balancePlayer[player][1]);
 
             getValidatedInt(prompt, MIN_BET, MAX_BET, &bet);
 
@@ -227,7 +227,7 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
         } while (bet < MIN_BET || bet > MAX_BET || bet > balancePlayer[player][1]);
 
         balancePlayer[player][2] = bet;
-        printf("Sie haben %d€ gesetzt.\n", balancePlayer[player][2]);
+        printf("Sie (Spieler %d) haben " TEXT_RESET TEXT_BOLD "%d€ " TEXT_RESET "gesetzt.\n\n", player + 1, balancePlayer[player][2]);
     }
 
     // bots place random bets
@@ -238,7 +238,7 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
         } else {
             int maxBotBet = (balancePlayer[bot][1] < MAX_BET) ? balancePlayer[bot][1] : MAX_BET;
             balancePlayer[bot][2] = MIN_BET + rand() % (maxBotBet - MIN_BET + 1);
-            printf("Bot %d hat %d€ gesetzt.\n", bot + 1, balancePlayer[bot][2]);
+            printf("Bot %d hat " TEXT_RESET TEXT_BOLD "%d€ " TEXT_RESET "gesetzt.\n", bot, balancePlayer[bot][2]);
         }
     }
 }
@@ -409,17 +409,17 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCard
     Bot turn
 */
 void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
+        int botHandValue = handValue(bot, *botCardCount);
         printf("Hand des Bots:\n");
         printHand(bot, *botCardCount);
-        int botHandValue = handValue(bot, *botCardCount);
-        printf("Aktueller Wert: %d\n", botHandValue);
+        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(bot, *botCardCount));
+
         while (botHandValue < 17) {
-            drawCard(deck, cardIndex, bot, botCardCount);
-            printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
-            botHandValue = handValue(bot, *botCardCount);
             printf("Bot zieht eine Karte:\n");
+            drawCard(deck, cardIndex, bot, botCardCount);
             printHand(bot, *botCardCount);
-            printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
+            botHandValue = handValue(bot, *botCardCount);
+            printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
         }
 }
 
@@ -432,12 +432,12 @@ void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
 void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardCount) {
     printf("Hand des Dealers:\n");
     printHand(dealer, *dealerCardCount);
-    printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
+    printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
     while (handValue(dealer, *dealerCardCount) < 17) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         printf("Dealer zieht eine Karte:\n");
         printHand(dealer, *dealerCardCount);
-        printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
+        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
     }
 }
 
@@ -583,7 +583,8 @@ int main() {
 
 
         // Dealer's turn
-        printf("Dealer ist am Zug:\n");
+        printf("\n▃▅▆█ 🤵‍♂️ Dealer █▆▅▃\n");
+        printf(TEXT_RESET TEXT_BOLD_UNDERLINE "Dealer ist am Zug:\n" TEXT_RESET);
         dealerTurn(deck, &cardIndex, dealer, &dealerCardCount);
 
 
