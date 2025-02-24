@@ -224,6 +224,11 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
 
     // player bet
     for (int player = 0; player < numPlayers; player++) {
+        if (balancePlayer[player][1] < MIN_BET) {
+            printf(TEXT_INVERT "Woahhh, du hast einen Sack Geld gefunden, mit dem du nun doch weiterspielen kannst! 🤑" TEXT_RESET);
+            balancePlayer[player][1] = BALANCE_PER_PLAYER;
+        }
+
         do {
             char prompt[100];
             snprintf(prompt, sizeof(prompt), "\nWie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€ | Guthaben: %d€): ", player + 1, MIN_BET, MAX_BET, balancePlayer[player][1]);
