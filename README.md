@@ -29,18 +29,18 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
 3. **In das Projektverzeichnis navigieren**:
    ```
    cd CBlackJack
-5. **Datei ausführen**:<br>
-   *unter Windows:*
+5. **BlackJack.exe ausführen**:<br>
+   unter Windows:
    ```
    BlackJack.exe
    ```
-   oder<br>
-   *unter macOS:*
+   oder
+   unter macOS:
    ```
    BlackJack
    ```
 
-#### Optional (wenn WSL (Windows Subsystem for Linux) installiert ist) oder macOS genutzt wird)
+#### Optional
 4. **Das Makefile ausführen**:
    ```
    make
@@ -89,6 +89,3 @@ Die Main-Funktion initialisiert die Karten, Spieler und die 'balance', bestimmt 
 Die Balance-Werte der Spieler werden in die nächste Runde übernommen und es wird mit diesen weitergespielt.
 
 Aufgrund der Nutzung verschiedener Textstyles die nicht mit jedem Compiler funktionieren, wurde ein alternatives Safetyfile erstellt, das auf die aufwendigen Textstyles verzichtet, um Fehlercodes zu vermeiden und eine saubere Ausgabe zu erzeugen.
-
-## Quellen
-Für die Nutzung der ANSI-Escape-Codes unter dem Betriebssystem Windows wurde Code von [dieser Website](https://solarianprogrammer.com/2019/04/08/c-programming-ansi-escape-codes-windows-macos-linux-terminals/) benutzt. Im speziellen betrifft dies die Dateien `ansi/ansi_escapes.h` und `ansi/ansi_escapes.c`. (aufgerufen am 24.02.2025).
