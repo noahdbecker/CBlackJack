@@ -120,12 +120,16 @@ typedef struct {
     int value;
 } Card;
 
+
+
 /*
     Initialize the deck of cards
 */
 const char *suits[NUM_SUITS] = {"Herz", "Karo", "Pik", "Kreuz"};
 const char *ranks[NUM_RANKS] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Bube", "Dame", "Koenig", "Ass"};
 const int values[NUM_RANKS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
+
+
 
 /*
     Generating the decks
@@ -144,6 +148,8 @@ void initializeDeck(Card *deck) {
     }
 }
 
+
+
 /*
     Shuffling the cards by assigning each card a random generated index in the set of cards
 */
@@ -155,6 +161,8 @@ void shuffleDeck(Card *deck) {
         deck[randomIndex] = temp;
     }
 }
+
+
 
 /*
     config for players (player count and bot count)
@@ -181,7 +189,14 @@ PlayerConfig choosePlayer() {
     return (PlayerConfig){numPlayers, numBots};
 }
 
-// Initialize every player & bot balance
+
+
+/*
+    initialize bet for every player with default values
+    * id (starting from 1)
+    * 5000€ (BALANCE_PER_PLAYER) default balance
+    * bet of 0
+*/
 void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
     for (int i = 0; i < numPlayers+numBots; i++) {
         balancePlayers[i][0] = i + 1;  // Player-ID
@@ -190,11 +205,15 @@ void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
     }
 }
 
-// Initialize every bet
+
+
+/*
+    getting every bet from every player
+*/
 void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
     int bet;
 
-    // players place their bets
+    // player bet
     for (int player = 0; player < numPlayers; player++) {
         do {
             char prompt[100];
@@ -224,6 +243,8 @@ void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
     }
 }
 
+
+
 /*
     Printing the hand of the player
 */
@@ -233,6 +254,8 @@ void printHand(Card hand[], int numCards) {
     }
 }
 
+
+
 /*
     Drawing cards and increasing the cardIndex
 */
@@ -241,6 +264,8 @@ void drawCard(Card *deck, int *cardIndex, Card hand[], int *cardCount) {
     (*cardCount)++;
     (*cardIndex)++;
 }
+
+
 
 /*
     Dealing the first 2 cards to the players and the dealer
@@ -270,12 +295,16 @@ void dealFirstCards(Card *deck, int numPlayers, int numBots, Card players[MAX_PL
     printf("════════════════════\n\n");
 }
 
+
+
 /*
     Check if the value of the hand is 21
 */
 bool blackjack(int value) {
     return value == 21;
 }
+
+
 
 /*
     Check if the value of the final hand is over 21 (bust)
@@ -284,6 +313,8 @@ bool checkBust(int value)
 {
     return value > 21;
 }
+
+
 
 /*
     Calculating the value of the hand
@@ -312,6 +343,8 @@ int handValue(Card hand[], int numCards) {
 
     return value;
 }
+
+
 
 /*
     Player's turn
@@ -370,6 +403,8 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) 
     }
 }
 
+
+
 /*
     Bot turn
 */
@@ -388,6 +423,8 @@ void botTurn(Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
         }
 }
 
+
+
 /*
     Dealer's turn
     The dealer has to draw cards until the value of the hand is at least 17
@@ -403,6 +440,9 @@ void dealerTurn(Card *deck, int *cardIndex, Card *dealer, int *dealerCardCount) 
         printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
     }
 }
+
+
+
 /*
     Determining the winner on basis of the hand value
 */
@@ -428,7 +468,10 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers,
 }
 
 
-// Balance development
+
+/*
+    calculating the payment made to the player if they lose, win or are even with the dealer
+*/
 void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int player, int balancePlayers[][3], Card *dealer, int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
     int playerValue = handValue(players[player], playerCardCount[player]);
     int dealerValue = handValue(dealer, dealerCardCount);
@@ -478,6 +521,8 @@ void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX
     *cardIndex = 0;
 }
 
+
+
 /*
     Main function
     The game is played by the players and the dealer
@@ -494,21 +539,19 @@ int main() {
     int numBots = config.numBots;
     int totalPlayers = numPlayers + numBots;
 
-
-
     Card players[MAX_PLAYERS+1][TOTAL_CARDS];
     Card dealer[20];
     int playerCardCount[MAX_PLAYERS] = {0};
     int dealerCardCount = 0;
     int cardIndex = 0;
 
-    // array: balance for players
+    // init balance: define array size and init default balances
     int balancePlayers[totalPlayers][3];
-
-    // init balance
     Balance(numPlayers, numBots, balancePlayers);
 
 
+
+    // MAIN GAME
     while (playing) {
         // reset the game at the beginning
         resetGame(players, playerCardCount, dealer, &dealerCardCount, &cardIndex);
@@ -577,11 +620,6 @@ int main() {
     printf("\n\n═════════════════════════════════════\n");
     printf("  ❤️ Vielen Dank für's spielen! ❤️"); // thx for playing ❤️
     printf("\n═════════════════════════════════════\n\n");
-
-    for (int i = 0; i < numPlayers; i++) {
-        free(balancePlayers[i]);
-    }
-    free(balancePlayers);
 
     return 0;
 }
