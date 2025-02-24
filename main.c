@@ -503,41 +503,6 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPl
 
 
 /*
-    calculating the payment made to the player if they lose, win or are even with the dealer
-*/
-void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int player, int balancePlayers[][3], Card *dealer, const int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
-    int playerValue = handValue(players[player], playerCardCount[player]);
-    int dealerValue = handValue(dealer, dealerCardCount);
-    int bet = balancePlayers[player][2];
-
-    // check if player has blackjack (2 cards and value of 21)
-    if (playerCardCount[player] == 2 && blackjack(playerValue)) {
-        int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
-        balancePlayers[player][1] += gewinn;
-        printf("Spieler %d hat ein BLACKJACK mit den ersten 2 Karten! Neue Balance: %d€ (Gewinn: +%d€)\n", player + 1, balancePlayers[player][1], gewinn);
-    }
-    // player wins against dealer
-    else if (dealerValue > 21 || playerValue > dealerValue) {
-        balancePlayers[player][1] += bet;  // pays double
-        printf("Spieler %d gewinnt! Neue Balance: %d€ (+%d€)\n", player + 1, balancePlayers[player][1], bet);
-    }
-    // player looses
-    else if (playerValue < dealerValue) {
-        balancePlayers[player][1] -= bet;
-        printf("Spieler %d verliert! Neue Balance: %d€ (-%d€)\n", player + 1, balancePlayers[player][1], bet);
-    }
-    // draw - money back
-    else {
-        balancePlayers[player][1] += 0;
-        printf("Spieler %d unentschieden! Balance bleibt bei %d€ (Einsatz zurück)\n", player + 1, balancePlayers[player][1]);
-    }
-    // reset bet
-    balancePlayers[player][2] = 0;
-}
-
-
-
-/*
     Reset Game
 */
 void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX_PLAYERS], Card dealer[], int *dealerCardCount, int *cardIndex) {
