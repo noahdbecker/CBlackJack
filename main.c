@@ -67,6 +67,8 @@ bool getValidatedChar(const char *prompt, char allowedChars[], size_t length, ch
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = '\0';
 
+        resetValidation(input);
+
         if (strlen(input) == 1 && characterValidation(input[0], allowedChars, length)) {
             *output = input[0];
             return true;
@@ -86,6 +88,8 @@ bool getValidatedInt(const char *prompt, int min, int max, int *output) {
     while (true) {
         printf("%s", prompt);
         fgets(input, sizeof(input), stdin);
+
+        resetValidation(input);
 
         char *invalid;
         int value = strtol(input, &invalid, 10);
