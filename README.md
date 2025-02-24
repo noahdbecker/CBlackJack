@@ -53,8 +53,8 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
    ```
    BlackJack
    ```
-6. **Dateien wieder löschen**:
-7. ```
+8. **Dateien wieder löschen**:
+   ```
    make clean
    ```
 
