@@ -24,20 +24,27 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
 ## Anwenderdokumentation
 ### Installation
 1. **Repository klonen**:
-   ```bash
-   git clone https://github.com/noahdbecker/CBlackJack.git
+   `git clone https://github.com/noahdbecker/CBlackJack.git`
 2. **In das Projektverzeichnis navigieren**:
+   `cd CBlackJack`
+3. **BlackJack.exe ausführen**:
+   `BlackJack.exe` (unter Windows)
+   oder
+   `BlackJack` (unter macOS)
+
+#### Optional
+4. **Das Makefile ausführen**:
+   `make`
+5. **BlackJack.exe ausführen (unter Windows)**:
    ```bash
-   cd CBlackJack
-3. **main.exe ausführen (unter Windows)**:
-   ```bash
-   main.exe
-3. **main ausführen (unter macOS)**:
-   ```bash
-   main
+   BlackJack.exe
+6. **BlackJack ausführen (unter macOS)**:
+   `BlackJack`
+6. **Dateien wieder löschen**:
+   `make clean`
 
 ### Spielverlauf
-Nach dem Ausführen der `main(.exe)` muss die Anzahl der Spieler und Spielerbots von 1 bis 6 festgelegt werden. Danach hat jeder Spieler die Möglichkeit seinen Einsatz zwischen 2€ und 500€ zu platzieren. Jeder Spieler bekommt jetzt seine Spielkarten zugeteilt und Spieler 1 darf sich entscheiden, ob er mit der *HIT*-Aktion (`'j'`) noch eine weitere Karte ziehen will oder, ob er mit der Stand-Aktion (`'n'`) seinen Zug beendet und seine Karten behält. Sofern der Spieler durch das Ziehen einer Karte den Wert 21 überschreitet, wird findet ein *BUST* statt, durch welchen der Spieler ausscheidet. 
+Nach dem Ausführen der `BlackJack(.exe)` muss die Anzahl der Spieler und Spielerbots von 1 bis 6 festgelegt werden. Danach hat jeder Spieler die Möglichkeit seinen Einsatz zwischen 2€ und 500€ zu platzieren. Jeder Spieler bekommt jetzt seine Spielkarten zugeteilt und Spieler 1 darf sich entscheiden, ob er mit der *HIT*-Aktion (`'j'`) noch eine weitere Karte ziehen will oder, ob er mit der Stand-Aktion (`'n'`) seinen Zug beendet und seine Karten behält. Sofern der Spieler durch das Ziehen einer Karte den Wert 21 überschreitet, wird findet ein *BUST* statt, durch welchen der Spieler ausscheidet. 
 
 Dies findet für die Anzahl der ausgewählten Spieler statt. Nun beginnt der Dealer so lange zu ziehen, bis er den Wert 17 überschreitet. Daraufhin wird ausgewertet, welcher der Spieler näher an der 21 dran sind, als der Dealer und welche Spieler den Wert überkauft haben. Gewinnt ein Spieler gegen den Dealer, erhält er seinen Einsatz verdoppelt zurück. Im Fall eines Gleichstands erhält der Spieler seinen Einsatz zurück. Bei einem Verlust verliert der Spieler seinen Einsatz. Jederzeit besteht die Möglichkeit durch einen RESET das Spiel zu beenden.
 
