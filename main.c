@@ -482,10 +482,10 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
 
     // check if player has blackjack (2 cards and value of 21)
     if (playerCardCount == 2 && blackjack(playerValue)) {
-        // if player and dealer = blackjack: lose
+        // if player and dealer = blackjack: draw
         if (dealerCardCount == 2 && blackjack(dealerValue)) {
-            balancePlayers[player][1] -= bet;
-            printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+            balancePlayers[player][1] += 0;
+            printf(TEXT_RESET "Balance bleibt bei " TEXT_BOLD "%d€ " TEXT_RESET TEXT_YELLOW "(Einsatz zurück)\n" TEXT_RESET, balancePlayers[player][1]);;
         } else {
             const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
             balancePlayers[player][1] += gewinn;
@@ -498,7 +498,7 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
         balancePlayers[player][1] -= bet;
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
-    else if (playerValue < dealerValue) {
+    else if (playerValue < dealerValue && dealerValue <= 21) {
         balancePlayers[player][1] -= bet;
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
