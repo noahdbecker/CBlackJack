@@ -45,7 +45,7 @@
 // reset validator
 void resetValidation(char *input) {
     input[strcspn(input, "\n")] = '\0';
-    if (strcmp(input, "reset") == 0) {
+    if (strcmp(input, "RESET") == 0 || strcmp(input, "reset") == 0) {
         exit(0);
     }
 }
@@ -453,22 +453,22 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
     if (playerCardCount == 2 && blackjack(playerValue)) {
         const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
         balancePlayers[player][1] += gewinn;
-        printf("Neue Balance: %d€ (Gewinn: +%d€)\n", balancePlayers[player][1], gewinn);
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], gewinn);
     }
     // player wins against dealer
     else if (dealerValue > 21 || playerValue > dealerValue) {
         balancePlayers[player][1] += bet;  // pays double
-        printf("Neue Balance: %d€ (+%d€)\n", balancePlayers[player][1], bet);
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
     // player looses
     else if (playerValue < dealerValue) {
         balancePlayers[player][1] -= bet;
-        printf("Neue Balance: %d€ (-%d€)\n", balancePlayers[player][1], bet);
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
     // draw - money back
     else {
         balancePlayers[player][1] += 0;
-        printf("Balance bleibt bei %d€ (Einsatz zurück)\n", balancePlayers[player][1]);
+        printf(TEXT_RESET "Balance bleibt bei " TEXT_BOLD "%d€ " TEXT_RESET TEXT_YELLOW "(Einsatz zurück)\n" TEXT_RESET, balancePlayers[player][1]);
     }
     // reset bet
     balancePlayers[player][2] = 0;
