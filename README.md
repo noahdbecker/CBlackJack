@@ -37,7 +37,7 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
    oder
    unter macOS:
    ```
-   Blackjack
+   BlackJack
    ```
 
 #### Optional
