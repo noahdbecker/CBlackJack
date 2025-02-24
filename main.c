@@ -6,6 +6,7 @@
 #include <math.h>
 
 
+
 /*
     Initialize constants for the deck of cards
 */
@@ -34,8 +35,6 @@
 
 
 
-
-
 /*
     input validators for:
     * "reset"
@@ -44,8 +43,11 @@
 */
 
 // reset validator
-void resetValidation() {
-    exit(0);
+void resetValidation(char *input) {
+    input[strcspn(input, "\n")] = '\0';
+    if (strcmp(input, "reset") == 0) {
+        exit(0);
+    }
 }
 
 // character validator
@@ -57,19 +59,51 @@ bool characterValidation(char input, char validValues[], size_t length) {
     }
     return false;
 }
+bool getValidatedChar(const char *prompt, char allowedChars[], size_t length, char *output) {
+    char input[10];
+
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        if (strlen(input) == 1 && characterValidation(input[0], allowedChars, length)) {
+            *output = input[0];
+            return true;
+        }
+
+        printf("Ungültige Eingabe! Bitte geben Sie '%c' oder '%c' ein.\n", allowedChars[0], allowedChars[1]);
+    }
+}
 
 // number validator
 bool intValidation(int input, int min, int max) {
     return input >= min && input <= max;
 }
+bool getValidatedInt(const char *prompt, int min, int max, int *output) {
+    char input[20];
 
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
 
+        char *invalid;
+        int value = strtol(input, &invalid, 10);
 
+        if (*invalid != '\0' && *invalid != '\n') {
+            printf("Ungültige Eingabe! Bitte geben Sie eine gültige Zahl ein.\n");
+            continue;
+        }
 
+        if (!intValidation(value, min, max)) {
+            printf("Zahl außerhalb des gültigen Bereichs! Erlaubt: %d bis %d.\n", min, max);
+            continue;
+        }
 
-
-
-
+        *output = value;
+        return true;
+    }
+}
 
 
 
@@ -127,51 +161,20 @@ typedef struct {
 } PlayerConfig;
 
 PlayerConfig choosePlayer() {
-    char input[20];
     int numPlayers = 0, numBots = 0;
     bool validPlayers = false;
 
-    while (!validPlayers) {
-        printf("\nGeben Sie die Anzahl der Spieler ein (1-%d): ", MAX_PLAYERS);
-        fgets(input, sizeof(input), stdin);
-        numPlayers = strtol(input, NULL, 10);
-
-        if (!intValidation(numPlayers, 1, MAX_PLAYERS)) {
-            printf("Ungültige Eingabe! Die Spieleranzahl muss zwischen 1 und %d liegen.\n", MAX_PLAYERS);
-            continue;
-        }
-
-        validPlayers = true;
-    }
+    getValidatedInt("\nGeben Sie die Anzahl der Spieler ein (1-6): ", 1, MAX_PLAYERS, &numPlayers);
 
     // if space for bots is available
     if (numPlayers < MAX_PLAYERS) {
-        bool validBots = false;
-
-        while (!validBots) {
-            printf("Wollen Sie noch Bots hinzufügen? (Maximal %d möglich): ", MAX_PLAYERS - numPlayers);
-            char *invalid;
-            fgets(input, sizeof(input), stdin);
-            numBots = strtol(input, &invalid, 10);
-
-            if (invalid == input || *invalid != '\n' && *invalid != '\0') {
-                printf("Ungültige Eingabe! Bitte geben Sie eine Zahl ein.\n");
-                continue;
-            }
-
-            if (!intValidation(numBots, 0, MAX_PLAYERS - numPlayers)) {
-                printf("Ungültige Anzahl von Bots! Maximal %d Bots erlaubt.\n", MAX_PLAYERS - numPlayers);
-                continue;
-            }
-
-            validBots = true;
-        }
+        char prompt[100];
+        snprintf(prompt, sizeof(prompt), "Wollen Sie noch Bots hinzufügen? (Maximal %d möglich): ", MAX_PLAYERS - numPlayers);
+        getValidatedInt(prompt, 0, MAX_PLAYERS - numPlayers, &numBots);
     }
 
-
     // return player config struct
-    PlayerConfig config = {numPlayers, numBots};
-    return config;
+    return (PlayerConfig){numPlayers, numBots};
 }
 
 // Initialize every player & bot balance
@@ -185,23 +188,22 @@ void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
 
 // Initialize every bet
 void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
-    char input[20];
     int bet;
 
     // players place their bets
     for (int player = 0; player < numPlayers; player++) {
         do {
-            printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€) ", player + 1, MIN_BET, MAX_BET);
-            fgets(input, sizeof(input), stdin);
-            bet = strtol(input, NULL, 10);
+            char prompt[100];
+            snprintf(prompt, sizeof(prompt), "Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€ | Guthaben: %d€): ", player + 1, MIN_BET, MAX_BET, balancePlayer[player][1]);
 
-            if (intValidation(bet, MIN_BET, MAX_BET)) {
-                balancePlayer[player][2] = strtol(input, NULL, 10);
-            } else {
-                printf("Ungültiger Einsatz! Bitte setzen Sie zwischen %d€ und %d€, aber nicht mehr als Ihr Guthaben (%d€).\n", MIN_BET, MAX_BET, balancePlayer[player][1]);
+            getValidatedInt(prompt, MIN_BET, MAX_BET, &bet);
+
+            if (bet > balancePlayer[player][1]) {
+                printf("Ungültiger Einsatz! Sie haben nur %d€ Guthaben.\n", balancePlayer[player][1]);
             }
-        } while (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]);
+        } while (bet < MIN_BET || bet > MAX_BET || bet > balancePlayer[player][1]);
 
+        balancePlayer[player][2] = bet;
         printf("Sie haben %d€ gesetzt.\n", balancePlayer[player][2]);
     }
 
@@ -328,32 +330,23 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) 
             break;
         }
 
-        char furtherCards[10];
         bool validInput = false;
-
         while (!validInput) {
-            printf("Wollen Sie eine weitere Karte ziehen? (j/n)? ");
-            scanf("%9s", furtherCards);
-            while (getchar() != '\n');
+            char jn[] = {'j', 'n'};
+            char choice;
 
-            char allowedCharacters[] = {'j', 'n'};
-            if (characterValidation(furtherCards[0], allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]))) {
-                validInput = true;
+            getValidatedChar("Wollen Sie eine weitere Karte ziehen? (j/n)", jn, sizeof(jn) / sizeof(jn[0]), &choice);
+            validInput = true;
 
-                if (furtherCards[0] == 'j') {
-                    // draw card and increase card count
-                    drawCard(deck, cardIndex, player, &playerCardCount);
+            if (choice == 'j') {
+                drawCard(deck, cardIndex, player, &playerCardCount);
 
-                    // calculate new hand value
-                    currentHandValue = handValue(player, playerCardCount);
-                    if (checkBust(currentHandValue)) {
-                        break;
-                    }
-                } else if (furtherCards[0] == 'n') {
-                    ziehen = false;  // player don't want new card
+                currentHandValue = handValue(player, playerCardCount);
+                if (checkBust(currentHandValue)) {
+                    break;
                 }
-            } else {
-                printf("Bitte geben Sie eine gültige Eingabe ('j' oder 'n') ein!\n");
+            } else if (choice == 'n') {
+                ziehen = false;
             }
         }
     }
@@ -570,22 +563,11 @@ int main() {
         printf("════════════════════\n\n");
 
 
-
-        char input[10];
-        bool validInput = false;
-        while (!validInput) {
-            printf("Wollen Sie erneut spielen (j/n)? ");
-            scanf("%9s", input);
-            while (getchar() != '\n');
-
-            char allowedCharacters[] = {'j', 'n'};
-            if (characterValidation(input[0], allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]))) {
-                playing = (input[0] == 'j');
-                validInput = true;
-            } else {
-                printf("Ungültige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
-            }
-        }
+        // play again?
+        char allowedCharacters[] = {'j', 'n'};
+        char choice;
+        getValidatedChar("Wollen Sie erneut spielen (j/n)? ", allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]), &choice);
+        playing = (choice == 'j');
     }
 
     printf("\n\n═════════════════════════════════════\n");
