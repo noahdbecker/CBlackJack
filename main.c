@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include "ansi/ansi_escapes.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -182,8 +181,9 @@ typedef struct {
     int numBots;
 } PlayerConfig;
 
-PlayerConfig choosePlayer(void) {
+PlayerConfig choosePlayer() {
     int numPlayers = 0, numBots = 0;
+    bool validPlayers = false;
 
     getValidatedInt("\nGeben Sie die Anzahl der Spieler ein (1-6): ", 1, MAX_PLAYERS, &numPlayers);
 
@@ -580,7 +580,7 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPl
 /*
     Reset Game
 */
-void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX_PLAYERS], int *dealerCardCount, int *cardIndex) {
+void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX_PLAYERS], Card dealer[], int *dealerCardCount, int *cardIndex) {
     for (int i = 0; i <= MAX_PLAYERS; i++) {
         playerCardCount[i] = 0;
         for (int j = 0; j < TOTAL_CARDS; j++) {
@@ -600,9 +600,7 @@ void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX
     Main function
     The game is played by the players (and bots) and the dealer
 */
-int main(void) {
-    setupConsole();
-
+int main() {
     srand(time(NULL));
     bool playing = true;
 
@@ -630,7 +628,7 @@ int main(void) {
         Card players[MAX_PLAYERS+1][TOTAL_CARDS];
 
         // reset the game at the beginning
-        resetGame(players, playerCardCount, &dealerCardCount, &cardIndex);
+        resetGame(players, playerCardCount, dealer, &dealerCardCount, &cardIndex);
 
         // shuffle deck new every time
         shuffleDeck(deck);
@@ -713,7 +711,6 @@ int main(void) {
 
     SLEEP(10000);
 
-    restoreConsole();
     return 0;
 }
 
