@@ -5,6 +5,15 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef _WIN32
+    #include <windows.h>
+    #define SLEEP(ms) Sleep(ms)
+#else
+    #include <unistd.h>
+    #define SLEEP(ms) usleep((ms) * 1000)
+#endif
+
+
 
 /*
     Initialize constants for the deck of cards
@@ -20,24 +29,81 @@
 #define MIN_BET 2
 #define MAX_BET 500
 
-/*
-    Text Styling
-*/
-#define TEXT_UNDERLINE "\x1b[4m"
-#define TEXT_BOLD_UNDERLINE "\x1b[1;4m"
-#define TEXT_BOLD "\x1b[1m"
-#define TEXT_GREEN "\x1b[32m"
-#define TEXT_YELLOW "\x1b[33m"
-#define TEXT_RED "\x1b[31m"
-#define TEXT_BLINKING "\x1b[5m"
-#define TEXT_RESET "\x1b[0m"
 
 /*
-    Input validator (y/n)
+    input validators for:
+    * "reset"
+    * characters (y/n)
+    * range of numbers (e.g. numbers of players 1-6)
 */
-bool inputValidation(char *input) {
-    return (strlen(input) == 1 && (*input == 'j' || *input == 'n'));
+
+// reset validator
+void resetValidation(char *input) {
+    input[strcspn(input, "\n")] = '\0';
+    if (strcmp(input, "RESET") == 0 || strcmp(input, "reset") == 0) {
+        exit(0);
+    }
 }
+
+// character validator
+bool characterValidation(char input, const char validValues[], const size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (input == validValues[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+bool getValidatedChar(const char *prompt, char allowedChars[], const size_t length, char *output) {
+    char input[10];
+
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        resetValidation(input);
+
+        if (strlen(input) == 1 && characterValidation(input[0], allowedChars, length)) {
+            *output = input[0];
+            return true;
+        }
+
+        printf("Ungueltige Eingabe! Bitte geben Sie " "'%c' " "oder " "'%c' " "ein.\n", allowedChars[0], allowedChars[1]);
+    }
+}
+
+// number validator
+bool intValidation(const int input, const int min, int max) {
+    return input >= min && input <= max;
+}
+bool getValidatedInt(const char *prompt, const int min, const int max, int *output) {
+    char input[20];
+
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
+
+        resetValidation(input);
+
+        char *invalid;
+        int value = strtol(input, &invalid, 10);
+
+        if (*invalid != '\0' && *invalid != '\n') {
+            printf( "Ungueltige Eingabe! Bitte geben Sie eine gueltige Zahl ein.\n");
+            continue;
+        }
+
+        if (!intValidation(value, min, max)) {
+            printf("Zahl außerhalb des gueltigen Bereichs! Erlaubt: " "%d " "bis " "%d" ".\n" , min, max);
+            continue;
+        }
+
+        *output = value;
+        return true;
+    }
+}
+
 
 
 /*
@@ -49,12 +115,16 @@ typedef struct {
     int value;
 } Card;
 
+
+
 /*
     Initialize the deck of cards
 */
 const char *suits[NUM_SUITS] = {"Herz", "Karo", "Pik", "Kreuz"};
 const char *ranks[NUM_RANKS] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Bube", "Dame", "Koenig", "Ass"};
 const int values[NUM_RANKS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11};
+
+
 
 /*
     Generating the decks
@@ -73,17 +143,21 @@ void initializeDeck(Card *deck) {
     }
 }
 
+
+
 /*
     Shuffling the cards by assigning each card a random generated index in the set of cards
 */
 void shuffleDeck(Card *deck) {
     for (int i = 0; i < TOTAL_CARDS; i++) {
-        int randomIndex = rand() % TOTAL_CARDS;
-        Card temp = deck[i];
+        const int randomIndex = rand() % TOTAL_CARDS;
+        const Card temp = deck[i];
         deck[i] = deck[randomIndex];
         deck[randomIndex] = temp;
     }
 }
+
+
 
 /*
     config for players (player count and bot count)
@@ -94,42 +168,31 @@ typedef struct {
 } PlayerConfig;
 
 PlayerConfig choosePlayer() {
-    char input[20];
     int numPlayers = 0, numBots = 0;
-    bool validInput = false;
+    bool validPlayers = false;
 
-    while (!validInput) {
-        printf("Geben Sie die Anzahl der Spieler ein (1-%d): ", MAX_PLAYERS);
-        fgets(input, sizeof(input), stdin);
-        numPlayers = strtol(input, NULL, 10);
+    getValidatedInt("\nGeben Sie die Anzahl der Spieler ein (1-6): ", 1, MAX_PLAYERS, &numPlayers);
 
-        if (numPlayers < 1 || numPlayers > MAX_PLAYERS) {
-            printf("Ungueltige Eingabe! Die Spieleranzahl muss zwischen 1 und %d liegen.\n", MAX_PLAYERS);
-            continue;
-        }
-
-        // if space
-        if (numPlayers < MAX_PLAYERS) {
-            printf("Wollen Sie noch Bots hinzufuegen? (Maximal %d moeglich): ", MAX_PLAYERS - numPlayers);
-            fgets(input, sizeof(input), stdin);
-            numBots = strtol(input, NULL, 10);
-
-            if (numBots < 0 || (numPlayers + numBots) > MAX_PLAYERS) {
-                printf("Ungueltige Anzahl von Bots! Maximal %d Bots erlaubt.\n", MAX_PLAYERS - numPlayers);
-                continue;
-            }
-        }
-
-        validInput = true;
+    // if space for bots is available
+    if (numPlayers < MAX_PLAYERS) {
+        char prompt[100];
+        snprintf(prompt, sizeof(prompt), "Wollen Sie noch Bots hinzufuegen? (Maximal %d moeglich): ", MAX_PLAYERS - numPlayers);
+        getValidatedInt(prompt, 0, MAX_PLAYERS - numPlayers, &numBots);
     }
 
     // return player config struct
-    PlayerConfig config = {numPlayers, numBots};
-    return config;
+    return (PlayerConfig){numPlayers, numBots};
 }
 
-// Initialize every player & bot balance
-void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
+
+
+/*
+    initialize bet for every player with default values
+    * id (starting from 1)
+    * 5000€ (BALANCE_PER_PLAYER) default balance
+    * bet of 0
+*/
+void Balance(const int numPlayers, const int numBots, int balancePlayers[][3]) {
     for (int i = 0; i < numPlayers+numBots; i++) {
         balancePlayers[i][0] = i + 1;  // Player-ID
         balancePlayers[i][1] = BALANCE_PER_PLAYER; //  Balance
@@ -137,74 +200,97 @@ void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
     }
 }
 
-// Initialize every bet
-void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
-    char input[20];
 
-    // players place their bets
+
+/*
+    getting every bet from every player
+*/
+void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) {
+    int bet;
+
+    // player bet
     for (int player = 0; player < numPlayers; player++) {
         do {
-            printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d Euro - %d Euro) ", player + 1, MIN_BET, MAX_BET);
-            fgets(input, sizeof(input), stdin);
-            input[strcspn(input, "\n")] = 0;
-            balancePlayer[player][2] = strtol(input, NULL, 10);
+            char prompt[100];
+            snprintf(prompt, sizeof(prompt), "\nWie viel Geld wollen Sie setzen, Spieler %d? (%d Euro - %d Euro | Guthaben: %d Euro): ", player + 1, MIN_BET, MAX_BET, balancePlayer[player][1]);
 
-            if (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]) {
-                printf("Ungueltiger Einsatz! Bitte setzen Sie zwischen %d Euro"
-                       " und %d Euro, aber nicht mehr als Ihr Guthaben (%d Euro).\n", MIN_BET, MAX_BET, balancePlayer[player][1]);
+            getValidatedInt(prompt, MIN_BET, MAX_BET, &bet);
+
+            if (bet > balancePlayer[player][1]) {
+                printf("Ungueltiger Einsatz! Sie haben nur %d Euro Guthaben.\n", balancePlayer[player][1]);
             }
-        } while (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]);
+        } while (bet < MIN_BET || bet > MAX_BET || bet > balancePlayer[player][1]);
 
-        printf("Sie haben %d Euro gesetzt.\n", balancePlayer[player][2]);
+        balancePlayer[player][2] = bet;
+        printf("Sie (Spieler %d) haben " "%d Euro " "gesetzt.\n\n", player + 1, balancePlayer[player][2]);
     }
 
     // bots place random bets
     for (int bot = numPlayers; bot < numBots + numPlayers; bot++) {
         if (balancePlayer[bot][1] < MIN_BET) {
             balancePlayer[bot][2] = 0;
-            printf("Bot %d hat nicht genug Geld zum Setzen und setzt nichts.\n", bot + 1);
+            printf("Bot %d hat nicht genug Geld zum setzen und setzt nichts.\n", bot + 1);
         } else {
             int maxBotBet = (balancePlayer[bot][1] < MAX_BET) ? balancePlayer[bot][1] : MAX_BET;
             balancePlayer[bot][2] = MIN_BET + rand() % (maxBotBet - MIN_BET + 1);
-            printf("Bot %d hat %d Euro gesetzt.\n", bot + 1, balancePlayer[bot][2]);
+            printf("Bot %d hat " "%d Euro " "gesetzt.\n", bot - numPlayers + 1, balancePlayer[bot][2]);
         }
     }
 }
 
+
+
 /*
     Printing the hand of the player
 */
-void printHand(Card hand[], int numCards) {
+void printHand(Card hand[], const int numCards) {
     for (int i = 0; i < numCards; i++) {
         printf("  %s %s\n", hand[i].rank, hand[i].suit);
+        SLEEP(250);
     }
 }
+
+
 
 /*
     Drawing cards and increasing the cardIndex
 */
-void drawCard(Card *deck, int *cardIndex, Card hand[], int *cardCount) {
+void drawCard(const Card *deck, int *cardIndex, Card hand[], int *cardCount) {
     hand[*cardCount] = deck[*cardIndex];
     (*cardCount)++;
     (*cardIndex)++;
 }
 
+
+
 /*
     Dealing the first 2 cards to the players and the dealer
     Cards of the player are shown, the dealer's second card is hidden
 */
-void dealFirstCards(Card *deck, int numPlayers, int numBots, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2], int playerCardCount[MAX_PLAYERS], int *cardIndex, int *dealerCardCount) {
+void dealFirstCards(const Card *deck, const int numPlayers, const int numBots, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2], int playerCardCount[MAX_PLAYERS], int *cardIndex, int *dealerCardCount) {
     // Player
     for (int player = 0; player < (numPlayers + numBots); player++) {
-        printf("-- Spieler %d:\n", player + 1);
+        if (player < numPlayers) {
+            printf("-- Spieler %d:\n", player + 1);
+        } else {
+            printf("-- Bot %d:\n", player - numPlayers + 1);
+        }
         for (int card = 0; card < CARDS_PER_PLAYER; card++) {
+            SLEEP(250);
             drawCard(deck, cardIndex, players[player], &playerCardCount[player]);
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
+            SLEEP(250);
         }
+
+        if (player != numPlayers - 1) {
+            SLEEP(1000);
+        }
+
         printf("\n");
     }
 
     printf("Dealer:\n");
+    SLEEP(500);
     for (int card = 0; card < CARDS_PER_PLAYER; card++) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         if (card == 0) {
@@ -212,29 +298,36 @@ void dealFirstCards(Card *deck, int numPlayers, int numBots, Card players[MAX_PL
         } else {
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
         }
+        SLEEP(250);
     }
 }
+
+
 
 /*
     Check if the value of the hand is 21
 */
-bool blackjack(int value) {
+bool blackjack(const int value) {
     return value == 21;
 }
+
+
 
 /*
     Check if the value of the final hand is over 21 (bust)
 */
-bool checkBust(int value)
+bool checkBust(const int value)
 {
     return value > 21;
 }
+
+
 
 /*
     Calculating the value of the hand
     Aces are counted as 11, if the value of the hand is over 21, the value of the ace is changed to 1
 */
-int handValue(Card hand[], int numCards) {
+int handValue(Card hand[], const int numCards) {
     int value = 0;
     int aceCount = 0;
 
@@ -258,158 +351,207 @@ int handValue(Card hand[], int numCards) {
     return value;
 }
 
+
+/*
+    Display the messages "BUST" and "BLACKJACK"
+*/
+void bustOrBlackjack(Card hand[], const int numCards) {
+    if (blackjack(handValue(hand, numCards))) {
+        if (numCards == 2) {
+            printf("natuerlicher Blackjack!" "\n");
+        } else {
+            printf("Blackjack!" "\n");
+        }
+    }
+
+    if (checkBust(handValue(hand, numCards))) {
+        printf( "BUST!" "\n");
+    }
+}
+
+
+
 /*
     Player's turn
     The player can decide to draw another card or to stop
     If the value of the hand is over 21, the player's turn is over
 */
-void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) {
+void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
     bool ziehen = true;
 
     while (ziehen) {
-        int currentHandValue = handValue(player, playerCardCount);
+        int currentHandValue = handValue(player, *playerCardCount);
 
         // Display the current hand and value
         printf("Ihre Hand:\n");
-        printHand(player, playerCardCount);
+        printHand(player, *playerCardCount);
         printf("Aktueller Wert: %d\n\n", currentHandValue);
 
-        // If the player's hand is already 21 or more, they can't draw further.        
+        // If the player's hand is already 21 or more, they can't draw further.
         if (blackjack(currentHandValue) || checkBust(currentHandValue)) {
             break;
         }
 
-        char furtherCards[10];
         bool validInput = false;
-
         while (!validInput) {
-            printf("Wollen Sie eine weitere Karte ziehen? (j/n)? ");
-            scanf("%9s", furtherCards);
-            while (getchar() != '\n');
+            char jn[] = {'j', 'n'};
+            char choice;
 
-            if (inputValidation(furtherCards)) {
-                validInput = true;
+            getValidatedChar("Wollen Sie eine weitere Karte ziehen? (j/n)", jn, sizeof(jn) / sizeof(jn[0]), &choice);
+            validInput = true;
 
-                if (furtherCards[0] == 'j') {
-                    // draw card and increase card count
-                    drawCard(deck, cardIndex, player, &playerCardCount);
+            if (choice == 'j') {
+                drawCard(deck, cardIndex, player, playerCardCount);
 
-                    // calculate new hand value
-                    currentHandValue = handValue(player, playerCardCount);
-                    if (checkBust(currentHandValue)) {
-                        break;
-                    }
-                } else if (furtherCards[0] == 'n') {
-                    ziehen = false;  // player don't want new card
+                currentHandValue = handValue(player, *playerCardCount);
+                if (checkBust(currentHandValue)) {
+                    break;
                 }
-            } else {
-                printf("Bitte geben Sie eine gueltige Eingabe ('j' oder 'n') ein!\n");
+            } else if (choice == 'n') {
+                ziehen = false;
             }
         }
     }
 
+    SLEEP(500);
+
     // After the loop ends, print final hand and value
     printf("Ihre endgueltige Hand:\n");
-    printHand(player, playerCardCount);
-    printf(" ==> %d\n", handValue(player, playerCardCount));
+    printHand(player, *playerCardCount);
+    printf(" ==> %d\n", handValue(player, *playerCardCount));
 
-    if (blackjack(handValue(player, playerCardCount))) {
-        printf("Blackjack!" "\n");
-    }
-
-    if (checkBust(handValue(player, playerCardCount)))
-    {
-        printf("BUST!" "\n");
-    }
+    bustOrBlackjack(player, *playerCardCount);
 }
+
+
 
 /*
     Bot turn
 */
-void botTurn(Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
-        printf("Hand des Bots:\n");
+void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
+    int botHandValue = handValue(bot, *botCardCount);
+    printf("Hand des Bots:\n");
+    printHand(bot, *botCardCount);
+    printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
+
+    SLEEP(500);
+
+    while (botHandValue < 17) {
+        printf("\nBot zieht eine Karte:\n");
+        drawCard(deck, cardIndex, bot, botCardCount);
         printHand(bot, *botCardCount);
-        int botHandValue = handValue(bot, *botCardCount);
-        printf("Aktueller Wert: %d\n", botHandValue);
-        while (botHandValue < 17) {
-            drawCard(deck, cardIndex, bot, botCardCount);
-            printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
-            botHandValue = handValue(bot, *botCardCount);
-            printf("Bot zieht eine Karte:\n");
-            printHand(bot, *botCardCount);
-            printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
-        }
+        botHandValue = handValue(bot, *botCardCount);
+        printf("Aktueller Wert: %d\n", handValue(bot, *botCardCount));
+        SLEEP(500);
+    }
+
+    bustOrBlackjack(bot, *botCardCount);
 }
+
+
 
 /*
     Dealer's turn
     The dealer has to draw cards until the value of the hand is at least 17
 */
-void dealerTurn(Card *deck, int *cardIndex, Card *dealer, int *dealerCardCount) {
+void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardCount) {
     printf("Hand des Dealers:\n");
     printHand(dealer, *dealerCardCount);
-    printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
+    printf("Aktueller Wert: %d\n\n", handValue(dealer, *dealerCardCount));
+
+    SLEEP(500);
     while (handValue(dealer, *dealerCardCount) < 17) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         printf("Dealer zieht eine Karte:\n");
         printHand(dealer, *dealerCardCount);
         printf("Aktueller Wert: %d\n", handValue(dealer, *dealerCardCount));
+        SLEEP(500);
     }
+
+    bustOrBlackjack(dealer, *dealerCardCount);
 }
+
+
+
+/*
+    updating the players balance based on the results of the game
+*/
+void updateBalance(int player, int playerValue, int dealerValue, int playerCardCount, int dealerCardCount, int balancePlayers[][3]) {
+    const int bet = balancePlayers[player][2];
+
+    // check if player has blackjack (2 cards and value of 21)
+    if (playerCardCount == 2 && blackjack(playerValue)) {
+        // if player and dealer = blackjack: draw
+        if (dealerCardCount == 2 && blackjack(dealerValue)) {
+            balancePlayers[player][1] += 0;
+            printf("Balance bleibt bei " "%d Euro " "(Einsatz zurueck)\n", balancePlayers[player][1]);;
+        } else {
+            const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
+            balancePlayers[player][1] += gewinn;
+            printf("Neue Balance: " "%d Euro "  "(+%d Euro)\n", balancePlayers[player][1], gewinn);
+        }
+    }
+
+    // player looses
+    else if (playerValue > 21) {
+        balancePlayers[player][1] -= bet;
+        printf("Neue Balance: "  "%d Euro "  "(-%d Euro)\n", balancePlayers[player][1], bet);
+    }
+    else if (playerValue < dealerValue && dealerValue <= 21) {
+        balancePlayers[player][1] -= bet;
+        printf("Neue Balance: " "%d Euro "  "(-%d Euro)\n", balancePlayers[player][1], bet);
+    }
+
+    // player wins against dealer
+    else if (dealerValue > 21 && playerValue < 21) {
+        balancePlayers[player][1] += bet;  // pays double
+        printf("Neue Balance: " "%d Euro " "(+%d Euro)\n" , balancePlayers[player][1], bet);
+    }
+    else if (playerValue > dealerValue) {
+        balancePlayers[player][1] += bet;
+        printf("Neue Balance: " "%d Euro " "(+%d Euro)\n" , balancePlayers[player][1], bet);
+    }
+
+    // draw - money back
+    else {
+        balancePlayers[player][1] += 0;
+        printf("Balance bleibt bei "  "%d Euro " "(Einsatz zurück)\n", balancePlayers[player][1]);
+    }
+
+    // reset bet
+    balancePlayers[player][2] = 0;
+}
+
+
+
 /*
     Determining the winner on basis of the hand value
 */
-void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int numPlayers, int numBots, Card dealer[], int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
+void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPlayers, const int numBots, Card dealer[], const int dealerCardCount, int playerCardCount[MAX_PLAYERS], int balancePlayers[][3]) {
     int dealerValue = handValue(dealer, dealerCardCount);
     for (int player = 0; player < (numPlayers + numBots); player++) {
+        const char *playerType = (player < numPlayers) ? "Spieler" : "Bot";
+        int playerNumber = (player < numPlayers) ? (player + 1) : (player - numPlayers + 1);
+
         int playerValue = handValue(players[player], playerCardCount[player]);
-        printf("Spieler %d hat " "%d Punkte%s" ".\n", player + 1, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
+        printf("%s %d hat " "%d Punkte%s" ".\n", playerType, playerNumber, playerValue, blackjack(playerValue) ? " (Blackjack)" : "");
 
         if (playerValue > 21) {
-            printf("Spieler %d hat " "ueberkauft.\n", player + 1);
+            printf("%s %d hat " "ueberkauft.\n", playerType, playerNumber);
         } else if (dealerValue > 21) {
-            printf("Dealer hat ueberkauft. Spieler %d " "gewinnt.\n" , player + 1);
+            printf("Dealer hat ueberkauft. %s %d " "gewinnt.\n", playerType, playerNumber);
         } else if (playerValue > dealerValue) {
-            printf("Spieler %d " "gewinnt.\n" , player + 1);
+            printf("%s %d " "gewinnt.\n", playerType, playerNumber);
         } else if (playerValue < dealerValue) {
-            printf("Dealer gewinnt gegen Spieler %d.\n" , player + 1);
+            printf( "Dealer gewinnt gegen %s %d.\n", playerType, playerNumber);
         } else {
-            printf("Spieler %d und der Dealer haben " "unentschieden.\n" , player + 1);
+            printf("%s %d und der Dealer haben " "unentschieden.\n", playerType, playerNumber);
         }
+        updateBalance(player, playerValue, dealerValue, playerCardCount[player], dealerCardCount, balancePlayers);
+
+        SLEEP(500);
         printf("\n");
     }
-}
-
-
-// Balance development
-void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int player, int balancePlayers[][3], Card *dealer, int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
-    int playerValue = handValue(players[player], playerCardCount[player]);
-    int dealerValue = handValue(dealer, dealerCardCount);
-    int bet = balancePlayers[player][2];
-
-    // check if player has blackjack (2 cards and value of 21)
-    if (playerCardCount[player] == 2 && blackjack(playerValue)) {
-        int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
-        balancePlayers[player][1] += gewinn;
-        printf("Spieler %d hat ein BLACKJACK mit den ersten 2 Karten! Neue Balance: %d Euro (Gewinn: +%d Euro)\n", player + 1, balancePlayers[player][1], gewinn);
-    }
-    // player wins against dealer
-    else if (dealerValue > 21 || playerValue > dealerValue) {
-        balancePlayers[player][1] += bet;  // pays double
-        printf("Spieler %d gewinnt! Neue Balance: %d Euro (+%d Euro)\n", player + 1, balancePlayers[player][1], bet);
-    }
-    // player looses
-    else if (playerValue < dealerValue) {
-        balancePlayers[player][1] -= bet;
-        printf("Spieler %d verliert! Neue Balance: %d Euro (-%d Euro)\n", player + 1, balancePlayers[player][1], bet);
-    }
-    // draw - money back
-    else {
-        balancePlayers[player][1] += bet;
-        printf("Spieler %d unentschieden! Balance bleibt bei %d Euro (Einsatz zurueck)\n", player + 1, balancePlayers[player][1]);
-    }
-    // reset bet
-    balancePlayers[player][2] = 0;
 }
 
 
@@ -431,9 +573,11 @@ void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX
     *cardIndex = 0;
 }
 
+
+
 /*
     Main function
-    The game is played by the players and the dealer
+    The game is played by the players (and bots) and the dealer
 */
 int main() {
     srand(time(NULL));
@@ -442,27 +586,26 @@ int main() {
     Card deck[TOTAL_CARDS];
     initializeDeck(deck); // call function `initializeDeck` to initialize the deck of cards
 
-    PlayerConfig config = choosePlayer(); // call function `choosePlayer` to choose the number of players
-    int numPlayers = config.numPlayers;
-    int numBots = config.numBots;
+    const PlayerConfig config = choosePlayer(); // call function `choosePlayer` to choose the number of players
+    const int numPlayers = config.numPlayers;
+    const int numBots = config.numBots;
     int totalPlayers = numPlayers + numBots;
 
-
-
-    Card players[MAX_PLAYERS+1][TOTAL_CARDS];
-    Card dealer[20];
-    int playerCardCount[MAX_PLAYERS] = {0};
+    int playerCardCount[MAX_PLAYERS+1] = {0};
     int dealerCardCount = 0;
     int cardIndex = 0;
 
-    // array: balance for players
+    // init balance: define array size and init default balances
     int balancePlayers[totalPlayers][3];
-
-    // init balance
     Balance(numPlayers, numBots, balancePlayers);
 
 
+
+    // MAIN GAME
     while (playing) {
+        Card dealer[50];
+        Card players[MAX_PLAYERS+1][TOTAL_CARDS];
+
         // reset the game at the beginning
         resetGame(players, playerCardCount, dealer, &dealerCardCount, &cardIndex);
 
@@ -470,66 +613,72 @@ int main() {
         shuffleDeck(deck);
         playerBet(balancePlayers, numPlayers, numBots);
 
+
         // call function `dealFirstCards` to deal the first 2 cards to the players and the dealer
         dealFirstCards(deck, numPlayers, numBots, players, dealer, playerCardCount, &cardIndex, &dealerCardCount);
 
         // Players' turns
         for (int player = 0; player < numPlayers; player++) {
+            SLEEP(250);
+            printf( "Spieler %d ist am Zug:\n", player + 1);
+            SLEEP(250);
+            playerTurn(deck, &cardIndex, players[player], &playerCardCount[player]);
 
-            printf("Spieler %d ist am Zug:\n", player + 1);
-            playerTurn(deck, &cardIndex, players[player], playerCardCount[player]);
             printf("\n");
+            SLEEP(1000);
+            printf("\n");
+            SLEEP(1000);
+            printf("\n\n");
         }
 
         for (int bot = numPlayers; bot < (numPlayers + numBots); bot++) {
-            printf("Bot %d ist am Zug:\n" , bot + 1 - numPlayers);
+            SLEEP(250);
+            printf( "Bot %d ist am Zug:\n", bot + 1 - numPlayers);
+            SLEEP(250);
             botTurn(deck, &cardIndex, players[bot], &playerCardCount[bot]);
+
             printf("\n");
+            SLEEP(1000);
+            printf("\n");
+            SLEEP(1000);
+            printf("\n\n");
         }
 
 
         // Dealer's turn
+
         printf("Dealer ist am Zug:\n");
-        int deckIndex = CARDS_PER_PLAYER * (numPlayers + numBots) + CARDS_PER_PLAYER;
+        SLEEP(250);
         dealerTurn(deck, &cardIndex, dealer, &dealerCardCount);
 
-
-        printf("\n\n");
-        printf("Dealer: " "%d Punkte\n", handValue(dealer, dealerCardCount)); // Dealer summary
-
-        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount); // Determine the winner
-
-        printf("\n\n");
         printf("\n");
+        SLEEP(1000);
+        printf( "Dealer: " "%d Punkte\n", handValue(dealer, dealerCardCount)); // Dealer summary
 
-        for (int player = 0; player < (numPlayers + numBots); player++) {
-            balanceDevelopment(players, player, balancePlayers, dealer, dealerCardCount, playerCardCount); // Balance development
-            printf("Spieler %d hat %d Euro\n\n", player+1, balancePlayers[player][1]);
-            }
 
-            char input[10];
-            bool validInput = false;
-            while (!validInput) {
-                printf("Wollen Sie erneut spielen (j/n)? ");
-                scanf("%9s", input);
-                while (getchar() != '\n');
+        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount, balancePlayers); // Determine the winner
 
-                if (inputValidation(input)) {
-                    playing = (input[0] == 'j');
-                    validInput = true;
-                } else {
-                    printf("Ungueltige Eingabe! Bitte geben Sie entweder 'j' oder 'n' ein.\n");
-                }
-            }
+        SLEEP(1500);
+
+        // play again?
+        char allowedCharacters[] = {'j', 'n'};
+        char choice;
+        getValidatedChar("Wollen Sie erneut spielen (j/n)? ", allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]), &choice);
+        playing = (choice == 'j');
+
+        if (choice == 'j') {
+            printf("\n\n\n\n\n\n\n\n\n");
         }
-
-    printf("Vielen Dank fuer's spielen!"); // thx for playing
-
-
-    for (int i = 0; i < numPlayers; i++) {
-        free(balancePlayers[i]);
     }
-    free(balancePlayers);
+
+
+    printf(" Vielen Dank für's Spielen!    \n");
+    printf("Made by Jan Kruske, Felix Schulz, Noah Becker\n");
+
+    printf("\nDas Spiel wird in 10 Sekunden beendet.\n");
+
+    SLEEP(10000);
 
     return 0;
 }
+
