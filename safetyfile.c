@@ -33,11 +33,79 @@
 #define TEXT_RESET "\x1b[0m"
 
 /*
-    Input validator (y/n)
+    input validators for:
+    * "reset"
+    * characters (y/n)
+    * range of numbers (e.g. numbers of players 1-6)
 */
-bool inputValidation(char *input) {
-    return (strlen(input) == 1 && (*input == 'j' || *input == 'n'));
+
+// reset validator
+void resetValidation(char *input) {
+    input[strcspn(input, "\n")] = '\0';
+    if (strcmp(input, "reset") == 0) {
+        exit(0);
+    }
 }
+
+// character validator
+bool characterValidation(char input, char validValues[], size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (input == validValues[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+bool getValidatedChar(const char *prompt, char allowedChars[], size_t length, char *output) {
+    char input[10];
+
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = '\0';
+
+        resetValidation(input);
+
+        if (strlen(input) == 1 && characterValidation(input[0], allowedChars, length)) {
+            *output = input[0];
+            return true;
+        }
+
+        printf("Ungültige Eingabe! Bitte geben Sie '%c' oder '%c' ein.\n", allowedChars[0], allowedChars[1]);
+    }
+}
+
+// number validator
+bool intValidation(int input, int min, int max) {
+    return input >= min && input <= max;
+}
+bool getValidatedInt(const char *prompt, int min, int max, int *output) {
+    char input[20];
+
+    while (true) {
+        printf("%s", prompt);
+        fgets(input, sizeof(input), stdin);
+
+        resetValidation(input);
+
+        char *invalid;
+        int value = strtol(input, &invalid, 10);
+
+        if (*invalid != '\0' && *invalid != '\n') {
+            printf("Ungültige Eingabe! Bitte geben Sie eine gültige Zahl ein.\n");
+            continue;
+        }
+
+        if (!intValidation(value, min, max)) {
+            printf("Zahl außerhalb des gültigen Bereichs! Erlaubt: %d bis %d.\n", min, max);
+            continue;
+        }
+
+        *output = value;
+        return true;
+    }
+}
+
 
 
 /*
