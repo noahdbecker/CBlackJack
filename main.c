@@ -475,6 +475,7 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
 }
 
 
+
 /*
     Determining the winner on basis of the hand value
 */
