@@ -32,12 +32,45 @@
 #define TEXT_BLINKING "\x1b[5m"
 #define TEXT_RESET "\x1b[0m"
 
+
+
+
+
 /*
-    Input validator (y/n)
+    input validators for:
+    * "reset"
+    * characters (y/n)
+    * range of numbers (e.g. numbers of players 1-6)
 */
-bool inputValidation(char *input) {
-    return (strlen(input) == 1 && (*input == 'j' || *input == 'n'));
+
+// reset validator
+void resetValidation() {
+    exit(0);
 }
+
+// character validator
+bool characterValidation(char input, char validValues[], size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (input == validValues[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// number validator
+bool intValidation(int input, int min, int max) {
+    return input >= min && input <= max;
+}
+
+
+
+
+
+
+
+
+
 
 
 /*
@@ -96,32 +129,45 @@ typedef struct {
 PlayerConfig choosePlayer() {
     char input[20];
     int numPlayers = 0, numBots = 0;
-    bool validInput = false;
+    bool validPlayers = false;
 
-    while (!validInput) {
-        printf("Geben Sie die Anzahl der Spieler ein (1-%d): ", MAX_PLAYERS);
+    while (!validPlayers) {
+        printf("\nGeben Sie die Anzahl der Spieler ein (1-%d): ", MAX_PLAYERS);
         fgets(input, sizeof(input), stdin);
         numPlayers = strtol(input, NULL, 10);
 
-        if (numPlayers < 1 || numPlayers > MAX_PLAYERS) {
+        if (!intValidation(numPlayers, 1, MAX_PLAYERS)) {
             printf("Ungültige Eingabe! Die Spieleranzahl muss zwischen 1 und %d liegen.\n", MAX_PLAYERS);
             continue;
         }
 
-        // if space
-        if (numPlayers < MAX_PLAYERS) {
-            printf("Wollen Sie noch Bots hinzufügen? (Maximal %d möglich): ", MAX_PLAYERS - numPlayers);
-            fgets(input, sizeof(input), stdin);
-            numBots = strtol(input, NULL, 10);
+        validPlayers = true;
+    }
 
-            if (numBots < 0 || (numPlayers + numBots) > MAX_PLAYERS) {
+    // if space for bots is available
+    if (numPlayers < MAX_PLAYERS) {
+        bool validBots = false;
+
+        while (!validBots) {
+            printf("Wollen Sie noch Bots hinzufügen? (Maximal %d möglich): ", MAX_PLAYERS - numPlayers);
+            char *invalid;
+            fgets(input, sizeof(input), stdin);
+            numBots = strtol(input, &invalid, 10);
+
+            if (invalid == input || *invalid != '\n' && *invalid != '\0') {
+                printf("Ungültige Eingabe! Bitte geben Sie eine Zahl ein.\n");
+                continue;
+            }
+
+            if (!intValidation(numBots, 0, MAX_PLAYERS - numPlayers)) {
                 printf("Ungültige Anzahl von Bots! Maximal %d Bots erlaubt.\n", MAX_PLAYERS - numPlayers);
                 continue;
             }
-        }
 
-        validInput = true;
+            validBots = true;
+        }
     }
+
 
     // return player config struct
     PlayerConfig config = {numPlayers, numBots};
@@ -140,16 +186,18 @@ void Balance(int numPlayers, int numBots, int balancePlayers[][3]) {
 // Initialize every bet
 void playerBet(int balancePlayer[][3], int numPlayers, int numBots) {
     char input[20];
+    int bet;
 
     // players place their bets
     for (int player = 0; player < numPlayers; player++) {
         do {
             printf("Wie viel Geld wollen Sie setzen, Spieler %d? (%d€ - %d€) ", player + 1, MIN_BET, MAX_BET);
             fgets(input, sizeof(input), stdin);
-            input[strcspn(input, "\n")] = 0;
-            balancePlayer[player][2] = strtol(input, NULL, 10);
+            bet = strtol(input, NULL, 10);
 
-            if (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]) {
+            if (intValidation(bet, MIN_BET, MAX_BET)) {
+                balancePlayer[player][2] = strtol(input, NULL, 10);
+            } else {
                 printf("Ungültiger Einsatz! Bitte setzen Sie zwischen %d€ und %d€, aber nicht mehr als Ihr Guthaben (%d€).\n", MIN_BET, MAX_BET, balancePlayer[player][1]);
             }
         } while (balancePlayer[player][2] < MIN_BET || balancePlayer[player][2] > MAX_BET || balancePlayer[player][2] > balancePlayer[player][1]);
@@ -288,7 +336,8 @@ void playerTurn(Card *deck, int *cardIndex, Card player[], int playerCardCount) 
             scanf("%9s", furtherCards);
             while (getchar() != '\n');
 
-            if (inputValidation(furtherCards)) {
+            char allowedCharacters[] = {'j', 'n'};
+            if (characterValidation(furtherCards[0], allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]))) {
                 validInput = true;
 
                 if (furtherCards[0] == 'j') {
@@ -406,7 +455,7 @@ void balanceDevelopment(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], int player, 
     }
     // draw - money back
     else {
-        balancePlayers[player][1] += bet;
+        balancePlayers[player][1] += 0;
         printf("Spieler %d unentschieden! Balance bleibt bei %d€ (Einsatz zurück)\n", player + 1, balancePlayers[player][1]);
     }
     // reset bet
@@ -486,7 +535,7 @@ int main() {
         }
 
         for (int bot = numPlayers; bot < (numPlayers + numBots); bot++) {
-            printf("▃▅▆█ 웃 %d █▆▅▃\n", bot + 1 - numPlayers);
+            printf("▃▅▆█ 🤖 %d █▆▅▃\n", bot + 1 - numPlayers);
             printf(TEXT_BOLD_UNDERLINE "Bot %d ist am Zug:\n" TEXT_RESET, bot + 1 - numPlayers);
             botTurn(deck, &cardIndex, players[bot], &playerCardCount[bot]);
             printf("\n");
@@ -529,7 +578,8 @@ int main() {
             scanf("%9s", input);
             while (getchar() != '\n');
 
-            if (inputValidation(input)) {
+            char allowedCharacters[] = {'j', 'n'};
+            if (characterValidation(input[0], allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]))) {
                 playing = (input[0] == 'j');
                 validInput = true;
             } else {
