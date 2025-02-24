@@ -504,7 +504,7 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
     }
 
     // player wins against dealer
-    else if (dealerValue > 21) {
+    else if (dealerValue > 21 && playerValue < 21) {
         balancePlayers[player][1] += bet;  // pays double
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
