@@ -466,16 +466,6 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
         }
     }
 
-    // player wins against dealer
-    else if (dealerValue > 21) {
-        balancePlayers[player][1] += bet;  // pays double
-        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
-    }
-    else if (playerValue > dealerValue) {
-        balancePlayers[player][1] += bet;
-        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
-    }
-
     // player looses
     else if (playerValue > 21) {
         balancePlayers[player][1] -= bet;
@@ -484,6 +474,16 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
     else if (playerValue < dealerValue) {
         balancePlayers[player][1] -= bet;
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+    }
+
+    // player wins against dealer
+    else if (dealerValue > 21) {
+        balancePlayers[player][1] += bet;  // pays double
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+    }
+    else if (playerValue > dealerValue) {
+        balancePlayers[player][1] += bet;
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
 
     // draw - money back
