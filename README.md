@@ -30,13 +30,13 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
    ```
    cd CBlackJack
 5. **Datei ausführen**:<br>
-   **unter Windows:**<br>
-   zuerst `build.bat` ausführen dann:<br><br>
+   *unter Windows:*<br>
+   zuerst `build.bat` ausführen dann:<br>
    ```
    BlackJack.exe
    ```
-   oder
-   unter macOS:
+   oder<br>
+   *unter macOS:*
    ```
    BlackJack
    ```
