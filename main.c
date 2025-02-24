@@ -5,6 +5,14 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef _WIN32
+    #include <windows.h>
+    #define SLEEP(ms) Sleep(ms)
+#else
+    #include <unistd.h>
+    #define SLEEP(ms) usleep((ms) * 1000)
+#endif
+
 
 
 /*
@@ -31,6 +39,7 @@
 #define TEXT_YELLOW "\x1b[33m"
 #define TEXT_RED "\x1b[31m"
 #define TEXT_BLINKING "\x1b[5m"
+#define TEXT_INVERT "\x1b[7m"
 #define TEXT_RESET "\x1b[0m"
 
 
@@ -251,6 +260,7 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
 void printHand(Card hand[], const int numCards) {
     for (int i = 0; i < numCards; i++) {
         printf("  %s %s\n", hand[i].rank, hand[i].suit);
+        SLEEP(250);
     }
 }
 
@@ -280,14 +290,22 @@ void dealFirstCards(const Card *deck, const int numPlayers, const int numBots, C
             printf("-- Bot %d:\n", player - numPlayers + 1);
         }
         for (int card = 0; card < CARDS_PER_PLAYER; card++) {
+            SLEEP(250);
             drawCard(deck, cardIndex, players[player], &playerCardCount[player]);
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
+            SLEEP(250);
         }
+
+        if (player != numPlayers - 1) {
+            SLEEP(1000);
+        }
+
         printf("\n");
     }
 
     printf("════════════════════\n");
     printf("Dealer:\n");
+    SLEEP(500);
     for (int card = 0; card < CARDS_PER_PLAYER; card++) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         if (card == 0) {
@@ -295,6 +313,7 @@ void dealFirstCards(const Card *deck, const int numPlayers, const int numBots, C
         } else {
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
         }
+        SLEEP(250);
     }
     printf("════════════════════\n\n");
 }
@@ -392,6 +411,8 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCard
         }
     }
 
+    SLEEP(500);
+
     // After the loop ends, print final hand and value
     printf("Ihre endgueltige Hand:\n");
     printHand(player, *playerCardCount);
@@ -418,12 +439,15 @@ void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
         printHand(bot, *botCardCount);
         printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
 
+        SLEEP(500);
+
         while (botHandValue < 17) {
             printf("\nBot zieht eine Karte:\n");
             drawCard(deck, cardIndex, bot, botCardCount);
             printHand(bot, *botCardCount);
             botHandValue = handValue(bot, *botCardCount);
             printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
+            SLEEP(500);
         }
 }
 
@@ -437,11 +461,14 @@ void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardC
     printf("Hand des Dealers:\n");
     printHand(dealer, *dealerCardCount);
     printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
+
+    SLEEP(500);
     while (handValue(dealer, *dealerCardCount) < 17) {
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         printf("Dealer zieht eine Karte:\n");
         printHand(dealer, *dealerCardCount);
         printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
+        SLEEP(500);
     }
 }
 
@@ -522,6 +549,8 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPl
             printf("%s %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, playerType, playerNumber);
         }
         updateBalance(player, playerValue, dealerValue, playerCardCount[player], dealerCardCount, balancePlayers);
+
+        SLEEP(500);
         printf("\n");
     }
 }
@@ -593,47 +622,75 @@ int main() {
         // Players' turns
         for (int player = 0; player < numPlayers; player++) {
             printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
+            SLEEP(250);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
+            SLEEP(250);
             playerTurn(deck, &cardIndex, players[player], &playerCardCount[player]);
 
             printf("\n");
+            SLEEP(1000);
+            printf("\n");
+            SLEEP(1000);
+            printf("\n\n");
         }
 
         for (int bot = numPlayers; bot < (numPlayers + numBots); bot++) {
             printf("▃▅▆█ 🤖 %d █▆▅▃\n", bot + 1 - numPlayers);
+            SLEEP(250);
             printf(TEXT_BOLD_UNDERLINE "Bot %d ist am Zug:\n" TEXT_RESET, bot + 1 - numPlayers);
+            SLEEP(250);
             botTurn(deck, &cardIndex, players[bot], &playerCardCount[bot]);
+
             printf("\n");
+            SLEEP(1000);
+            printf("\n");
+            SLEEP(1000);
+            printf("\n\n");
         }
 
 
         // Dealer's turn
         printf("\n▃▅▆█ 🤵‍♂️ Dealer █▆▅▃\n");
+        SLEEP(250);
         printf(TEXT_RESET TEXT_BOLD_UNDERLINE "Dealer ist am Zug:\n" TEXT_RESET);
+        SLEEP(250);
         dealerTurn(deck, &cardIndex, dealer, &dealerCardCount);
 
-
-        printf("\n\n");
+        printf("\n");
+        SLEEP(1000);
+        printf("\n");
         printf("════════════════════\n\n");
         printf("*****************\n");
+        SLEEP(250);
         printf(TEXT_RESET "Dealer: " TEXT_BOLD_UNDERLINE "%d Punkte\n" TEXT_RESET, handValue(dealer, dealerCardCount)); // Dealer summary
+        SLEEP(250);
         printf("*****************\n\n");
 
 
         determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount, balancePlayers); // Determine the winner
         printf("════════════════════\n");
 
+        SLEEP(1500);
 
         // play again?
         char allowedCharacters[] = {'j', 'n'};
         char choice;
         getValidatedChar("Wollen Sie erneut spielen (j/n)? ", allowedCharacters, sizeof(allowedCharacters) / sizeof(allowedCharacters[0]), &choice);
         playing = (choice == 'j');
+
+        if (choice == 'j') {
+            printf("\n\n\n\n\n\n\n\n\n");
+        }
     }
 
-    printf("\n\n═════════════════════════════════════\n");
-    printf("  ❤️ Vielen Dank für's spielen! ❤️"); // thx for playing ❤️
-    printf("\n═════════════════════════════════════\n\n");
+    printf("\n\n" TEXT_INVERT "═════════════════════════════════════════════" TEXT_RESET "\n");
+    printf("     " TEXT_BLINKING "❤️" TEXT_RESET " Vielen Dank für's Spielen! " TEXT_BLINKING "❤️" TEXT_RESET "      \n");
+    printf("Made by Jan Kruske, Felix Schulz, Noah Becker\n");
+    printf(TEXT_INVERT "═════════════════════════════════════════════" TEXT_RESET "\n\n");
+
+    printf("\nDas Spiel wird in 10 Sekunden beendet.\n");
+
+    SLEEP(10000);
 
     return 0;
 }
