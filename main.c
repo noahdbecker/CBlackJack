@@ -74,7 +74,7 @@ bool getValidatedChar(const char *prompt, char allowedChars[], const size_t leng
             return true;
         }
 
-        printf("Ungültige Eingabe! Bitte geben Sie '%c' oder '%c' ein.\n", allowedChars[0], allowedChars[1]);
+        printf(TEXT_RESET TEXT_RED "Ungültige Eingabe! Bitte geben Sie " TEXT_RESET "'%c' " TEXT_RED "oder " TEXT_RESET "'%c' " TEXT_RED "ein.\n" TEXT_RESET, allowedChars[0], allowedChars[1]);
     }
 }
 
@@ -95,12 +95,12 @@ bool getValidatedInt(const char *prompt, const int min, const int max, int *outp
         int value = strtol(input, &invalid, 10);
 
         if (*invalid != '\0' && *invalid != '\n') {
-            printf("Ungültige Eingabe! Bitte geben Sie eine gültige Zahl ein.\n");
+            printf(TEXT_RESET TEXT_RED "Ungültige Eingabe! Bitte geben Sie eine gültige Zahl ein.\n" TEXT_RESET);
             continue;
         }
 
         if (!intValidation(value, min, max)) {
-            printf("Zahl außerhalb des gültigen Bereichs! Erlaubt: %d bis %d.\n", min, max);
+            printf(TEXT_RESET TEXT_RED "Zahl außerhalb des gültigen Bereichs! Erlaubt: " TEXT_RESET "%d " TEXT_RED "bis " TEXT_RESET "%d" TEXT_RED ".\n" TEXT_RESET, min, max);
             continue;
         }
 
@@ -563,7 +563,7 @@ int main() {
     const int numBots = config.numBots;
     int totalPlayers = numPlayers + numBots;
 
-    int playerCardCount[MAX_PLAYERS] = {0};
+    int playerCardCount[MAX_PLAYERS+1] = {0};
     int dealerCardCount = 0;
     int cardIndex = 0;
 
@@ -575,7 +575,7 @@ int main() {
 
     // MAIN GAME
     while (playing) {
-        Card dealer[20];
+        Card dealer[50];
         Card players[MAX_PLAYERS+1][TOTAL_CARDS];
 
         // reset the game at the beginning
