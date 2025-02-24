@@ -373,11 +373,14 @@ int handValue(Card hand[], const int numCards) {
 */
 void bustOrBlackjack(Card hand[], const int numCards) {
     if (blackjack(handValue(hand, numCards))) {
-        printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
+        if (numCards == 2) {
+            printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "natürlicher Blackjack!" TEXT_RESET "\n");
+        } else {
+            printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
+        }
     }
 
-    if (checkBust(handValue(hand, numCards)))
-    {
+    if (checkBust(handValue(hand, numCards))) {
         printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
     }
 }
