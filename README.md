@@ -38,6 +38,8 @@ Nach dem Ausführen der Main.exe muss die Anzahl der Spieler und Spielerbots von
 
 Dies findet für die Anzahl der ausgewählten Spieler statt. Nun beginnt der Dealer so lange zu ziehen, bis er den Wert 17 überschreitet. Daraufhin wird ausgewertet, welcher der Spieler näher an der 21 dran sind, als der Dealer und welche Spieler den Wert überkauft haben. Gewinnt ein Spieler gegen den Dealer, erhält er seinen Einsatz verdoppelt zurück. Im Fall eines Gleichstands erhält der Spieler seinen Einsatz zurück. Bei einem Verlust verliert der Spieler seinen Einsatz. Jederzeit besteht die Möglichkeit durch einen RESET das Spiel zu beenden.
 
+Sollte der Compiler die Ausgabe des Textstyles nicht richtig darstellen, besteht die Möglichkeit auf das Safetyfile zuzugreifen, welches auf die Textstyles verzichtet, um dem Nutzer in jedem Fall ein angenehmes Spielerlebnis zu garantieren.
+
 ## Entwicklerdokumentation
 Zu Beginn werden die nötigen Bobliotheken importiert, die Konstanten definiert und die Text-Styles eingeführt. Anschließend werden Kartendecks erstellt und gemischt. Die Abfrage erfolgt, um die Anzahl der Spieler und die Anzahl der Spielerbots, falls möglich, hinzuzufügen. 
 
@@ -51,3 +53,5 @@ Der Spielzug der Spieler ist so aufgebaut, dass, angefangen bei Spieler 1, jeder
 Sobald jeder Spieler seine Züge beendet hat, wird die finale Hand der Spieler auf der Konsole ausgegeben und der Dealer beginnt mit seinem Spielzug. Er zieht neue Karten bis er den Wert 17 überschreitet und beendet dann seinen Spielzug. Zuletzt wird ausgewertet, welcher Spieler näher an der 21 dran ist als der Dealer.
 
 Die Main-Funktion initialisiert die Karten, Spieler und die 'balance', bestimmt den Spielverlauf und prüft am Ende, ob der Spieler ein neues Spiel starten möchte.
+
+Aufgrund der Nutzung verschiedener Textstyles die nicht mit jedem Compiler funktionieren, wurde ein alternatives Safetyfile erstellt, das auf die aufwendigen Textstyles verzichtet, um Fehlercodes zu vermeiden und eine saubere Ausgabe zu erzeugen.
