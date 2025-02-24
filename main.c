@@ -351,15 +351,15 @@ int handValue(Card hand[], const int numCards) {
     The player can decide to draw another card or to stop
     If the value of the hand is over 21, the player's turn is over
 */
-void playerTurn(const Card *deck, int *cardIndex, Card player[], int playerCardCount) {
+void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCardCount) {
     bool ziehen = true;
 
     while (ziehen) {
-        int currentHandValue = handValue(player, playerCardCount);
+        int currentHandValue = handValue(player, *playerCardCount);
 
         // Display the current hand and value
         printf("Ihre Hand:\n");
-        printHand(player, playerCardCount);
+        printHand(player, *playerCardCount);
         printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, currentHandValue);
 
         // If the player's hand is already 21 or more, they can't draw further.        
@@ -376,9 +376,9 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int playerCardC
             validInput = true;
 
             if (choice == 'j') {
-                drawCard(deck, cardIndex, player, &playerCardCount);
+                drawCard(deck, cardIndex, player, playerCardCount);
 
-                currentHandValue = handValue(player, playerCardCount);
+                currentHandValue = handValue(player, *playerCardCount);
                 if (checkBust(currentHandValue)) {
                     break;
                 }
@@ -390,14 +390,14 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int playerCardC
 
     // After the loop ends, print final hand and value
     printf("Ihre endgueltige Hand:\n");
-    printHand(player, playerCardCount);
-    printf(TEXT_RESET TEXT_BOLD " ==> %d\n", handValue(player, playerCardCount));
+    printHand(player, *playerCardCount);
+    printf(TEXT_RESET TEXT_BOLD " ==> %d\n", handValue(player, *playerCardCount));
 
-    if (blackjack(handValue(player, playerCardCount))) {
+    if (blackjack(handValue(player, *playerCardCount))) {
         printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
     }
 
-    if (checkBust(handValue(player, playerCardCount)))
+    if (checkBust(handValue(player, *playerCardCount)))
     {
         printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
     }
@@ -525,7 +525,7 @@ void resetGame(Card players[MAX_PLAYERS+1][TOTAL_CARDS], int playerCardCount[MAX
 
 /*
     Main function
-    The game is played by the players and the dealer
+    The game is played by the players (and bots) and the dealer
 */
 int main() {
     srand(time(NULL));
@@ -570,7 +570,7 @@ int main() {
         for (int player = 0; player < numPlayers; player++) {
             printf("▃▅▆█ 웃 %d █▆▅▃\n", player + 1);
             printf(TEXT_BOLD_UNDERLINE "Spieler %d ist am Zug:\n" TEXT_RESET, player + 1);
-            playerTurn(deck, &cardIndex, players[player], playerCardCount[player]);
+            playerTurn(deck, &cardIndex, players[player], &playerCardCount[player]);
 
             printf("\n");
         }
