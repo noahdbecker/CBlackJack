@@ -368,6 +368,21 @@ int handValue(Card hand[], const int numCards) {
 }
 
 
+/*
+    Display the messages "BUST" and "BLACKJACK"
+*/
+void bustOrBlackjack(Card hand[], const int numCards) {
+    if (blackjack(handValue(hand, numCards))) {
+        printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
+    }
+
+    if (checkBust(handValue(hand, numCards)))
+    {
+        printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
+    }
+}
+
+
 
 /*
     Player's turn
@@ -418,14 +433,7 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCard
     printHand(player, *playerCardCount);
     printf(TEXT_RESET TEXT_BOLD " ==> %d\n", handValue(player, *playerCardCount));
 
-    if (blackjack(handValue(player, *playerCardCount))) {
-        printf(TEXT_RESET TEXT_GREEN TEXT_BLINKING "Blackjack!" TEXT_RESET "\n");
-    }
-
-    if (checkBust(handValue(player, *playerCardCount)))
-    {
-        printf(TEXT_RESET TEXT_RED "BUST!" TEXT_RESET "\n");
-    }
+    bustOrBlackjack(player, *playerCardCount);
 }
 
 
@@ -434,21 +442,23 @@ void playerTurn(const Card *deck, int *cardIndex, Card player[], int *playerCard
     Bot turn
 */
 void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
-        int botHandValue = handValue(bot, *botCardCount);
-        printf("Hand des Bots:\n");
+    int botHandValue = handValue(bot, *botCardCount);
+    printf("Hand des Bots:\n");
+    printHand(bot, *botCardCount);
+    printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
+
+    SLEEP(500);
+
+    while (botHandValue < 17) {
+        printf("\nBot zieht eine Karte:\n");
+        drawCard(deck, cardIndex, bot, botCardCount);
         printHand(bot, *botCardCount);
+        botHandValue = handValue(bot, *botCardCount);
         printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
-
         SLEEP(500);
+    }
 
-        while (botHandValue < 17) {
-            printf("\nBot zieht eine Karte:\n");
-            drawCard(deck, cardIndex, bot, botCardCount);
-            printHand(bot, *botCardCount);
-            botHandValue = handValue(bot, *botCardCount);
-            printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
-            SLEEP(500);
-        }
+    bustOrBlackjack(bot, *botCardCount);
 }
 
 
@@ -467,9 +477,11 @@ void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardC
         drawCard(deck, cardIndex, dealer, dealerCardCount);
         printf("Dealer zieht eine Karte:\n");
         printHand(dealer, *dealerCardCount);
-        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
+        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(dealer, *dealerCardCount));
         SLEEP(500);
     }
+
+    bustOrBlackjack(dealer, *dealerCardCount);
 }
 
 
