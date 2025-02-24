@@ -238,7 +238,7 @@ void playerBet(int balancePlayer[][3], const int numPlayers, const int numBots) 
         } else {
             int maxBotBet = (balancePlayer[bot][1] < MAX_BET) ? balancePlayer[bot][1] : MAX_BET;
             balancePlayer[bot][2] = MIN_BET + rand() % (maxBotBet - MIN_BET + 1);
-            printf("Bot %d hat " TEXT_RESET TEXT_BOLD "%d€ " TEXT_RESET "gesetzt.\n", bot, balancePlayer[bot][2]);
+            printf("Bot %d hat " TEXT_RESET TEXT_BOLD "%d€ " TEXT_RESET "gesetzt.\n", bot - numPlayers + 1, balancePlayer[bot][2]);
         }
     }
 }
@@ -274,7 +274,11 @@ void drawCard(const Card *deck, int *cardIndex, Card hand[], int *cardCount) {
 void dealFirstCards(const Card *deck, const int numPlayers, const int numBots, Card players[MAX_PLAYERS+1][TOTAL_CARDS], Card dealer[2], int playerCardCount[MAX_PLAYERS], int *cardIndex, int *dealerCardCount) {
     // Player
     for (int player = 0; player < (numPlayers + numBots); player++) {
-        printf("-- Spieler %d:\n", player + 1);
+        if (player < numPlayers) {
+            printf("-- Spieler %d:\n", player + 1);
+        } else {
+            printf("-- Bot %d:\n", player - numPlayers + 1);
+        }
         for (int card = 0; card < CARDS_PER_PLAYER; card++) {
             drawCard(deck, cardIndex, players[player], &playerCardCount[player]);
             printf("  %s %s\n", deck[*(cardIndex)-1].rank, deck[*(cardIndex)-1].suit);
@@ -412,10 +416,10 @@ void botTurn(const Card *deck, int *cardIndex, Card bot[], int *botCardCount) {
         int botHandValue = handValue(bot, *botCardCount);
         printf("Hand des Bots:\n");
         printHand(bot, *botCardCount);
-        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n\n" TEXT_RESET, handValue(bot, *botCardCount));
+        printf(TEXT_RESET TEXT_BOLD "Aktueller Wert: %d\n" TEXT_RESET, handValue(bot, *botCardCount));
 
         while (botHandValue < 17) {
-            printf("Bot zieht eine Karte:\n");
+            printf("\nBot zieht eine Karte:\n");
             drawCard(deck, cardIndex, bot, botCardCount);
             printHand(bot, *botCardCount);
             botHandValue = handValue(bot, *botCardCount);
@@ -446,30 +450,48 @@ void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardC
 /*
     updating the players balance based on the results of the game
 */
-void updateBalance(int player, int playerValue, int dealerValue, int playerCardCount, int balancePlayers[][3]) {
+void updateBalance(int player, int playerValue, int dealerValue, int playerCardCount, int dealerCardCount, int balancePlayers[][3]) {
     const int bet = balancePlayers[player][2];
 
     // check if player has blackjack (2 cards and value of 21)
     if (playerCardCount == 2 && blackjack(playerValue)) {
-        const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
-        balancePlayers[player][1] += gewinn;
-        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], gewinn);
+        // if player and dealer = blackjack: lose
+        if (dealerCardCount == 2 && blackjack(dealerValue)) {
+            balancePlayers[player][1] -= bet;
+            printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+        } else {
+            const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
+            balancePlayers[player][1] += gewinn;
+            printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], gewinn);
+        }
     }
+
     // player wins against dealer
-    else if (dealerValue > 21 || playerValue > dealerValue) {
+    else if (dealerValue > 21) {
         balancePlayers[player][1] += bet;  // pays double
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
+    else if (playerValue > dealerValue) {
+        balancePlayers[player][1] += bet;
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_GREEN "(+%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+    }
+
     // player looses
+    else if (playerValue > 21) {
+        balancePlayers[player][1] -= bet;
+        printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
+    }
     else if (playerValue < dealerValue) {
         balancePlayers[player][1] -= bet;
         printf(TEXT_RESET "Neue Balance: " TEXT_BOLD "%d€ " TEXT_RESET TEXT_RED "(-%d€)\n" TEXT_RESET, balancePlayers[player][1], bet);
     }
+
     // draw - money back
     else {
         balancePlayers[player][1] += 0;
         printf(TEXT_RESET "Balance bleibt bei " TEXT_BOLD "%d€ " TEXT_RESET TEXT_YELLOW "(Einsatz zurück)\n" TEXT_RESET, balancePlayers[player][1]);
     }
+
     // reset bet
     balancePlayers[player][2] = 0;
 }
@@ -482,21 +504,24 @@ void updateBalance(int player, int playerValue, int dealerValue, int playerCardC
 void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPlayers, const int numBots, Card dealer[], const int dealerCardCount, int playerCardCount[MAX_PLAYERS], int balancePlayers[][3]) {
     int dealerValue = handValue(dealer, dealerCardCount);
     for (int player = 0; player < (numPlayers + numBots); player++) {
+        const char *playerType = (player < numPlayers) ? "Spieler" : "Bot";
+        int playerNumber = (player < numPlayers) ? (player + 1) : (player - numPlayers + 1);
+
         int playerValue = handValue(players[player], playerCardCount[player]);
-        printf("Spieler %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", player + 1, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
+        printf("%s %d hat " TEXT_BOLD_UNDERLINE "%d Punkte%s" TEXT_RESET ".\n", playerType, playerNumber, playerValue, blackjack(playerValue) ? TEXT_RESET " (Blackjack)" : "");
 
         if (playerValue > 21) {
-            printf("Spieler %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, player + 1);
+            printf("%s %d hat " TEXT_RED "ueberkauft.\n" TEXT_RESET, playerType, playerNumber);
         } else if (dealerValue > 21) {
-            printf("Dealer hat ueberkauft. Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+            printf("Dealer hat ueberkauft. %s %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, playerType, playerNumber);
         } else if (playerValue > dealerValue) {
-            printf("Spieler %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, player + 1);
+            printf("%s %d " TEXT_GREEN "gewinnt.\n" TEXT_RESET, playerType, playerNumber);
         } else if (playerValue < dealerValue) {
-            printf(TEXT_RED "Dealer gewinnt gegen Spieler %d.\n" TEXT_RESET, player + 1);
+            printf(TEXT_RED "Dealer gewinnt gegen %s %d.\n" TEXT_RESET, playerType, playerNumber);
         } else {
-            printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
+            printf("%s %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, playerType, playerNumber);
         }
-        updateBalance(player, playerValue, dealerValue, playerCardCount[player], balancePlayers);
+        updateBalance(player, playerValue, dealerValue, playerCardCount[player], dealerCardCount, balancePlayers);
         printf("\n");
     }
 }
