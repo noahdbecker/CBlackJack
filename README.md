@@ -29,8 +29,9 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
 3. **In das Projektverzeichnis navigieren**:
    ```
    cd CBlackJack
-5. **BlackJack.exe ausführen**:<br>
-   unter Windows:
+5. **Datei ausführen**:<br>
+   unter Windows:<br>
+   zuerst `build.bat` ausführen dann:<br>
    ```
    BlackJack.exe
    ```
@@ -40,7 +41,7 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
    BlackJack
    ```
 
-#### Optional
+#### Optional (wenn WSL (Windows Subsystem for Linux) installiert ist) oder macOS genutzt wird)
 4. **Das Makefile ausführen**:
    ```
    make
