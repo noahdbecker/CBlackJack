@@ -44,15 +44,19 @@ Dieses Projekt simuliert das Kartenspiel Blackjack. Es ermöglicht bis zu 6 Spie
 4. **Das Makefile ausführen**:
    ```
    make
+   ```
 6. **BlackJack.exe ausführen (unter Windows)**:
    ```
    BlackJack.exe
+   ```
 7. **BlackJack ausführen (unter macOS)**:
    ```
    BlackJack
+   ```
 6. **Dateien wieder löschen**:
 7. ```
    make clean
+   ```
 
 ### Spielverlauf
 Nach dem Ausführen der `BlackJack(.exe)` muss die Anzahl der Spieler und Spielerbots von 1 bis 6 festgelegt werden. Danach hat jeder Spieler die Möglichkeit seinen Einsatz zwischen 2€ und 500€ zu platzieren. Jeder Spieler bekommt jetzt seine Spielkarten zugeteilt und Spieler 1 darf sich entscheiden, ob er mit der *HIT*-Aktion (`'j'`) noch eine weitere Karte ziehen will oder, ob er mit der Stand-Aktion (`'n'`) seinen Zug beendet und seine Karten behält. Sofern der Spieler durch das Ziehen einer Karte den Wert 21 überschreitet, wird findet ein *BUST* statt, durch welchen der Spieler ausscheidet. 
