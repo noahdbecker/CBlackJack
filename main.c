@@ -444,9 +444,41 @@ void dealerTurn(const Card *deck, int *cardIndex, Card *dealer, int *dealerCardC
 
 
 /*
+    updating the players balance based on the results of the game
+*/
+void updateBalance(int player, int playerValue, int dealerValue, int playerCardCount, int balancePlayers[][3]) {
+    const int bet = balancePlayers[player][2];
+
+    // check if player has blackjack (2 cards and value of 21)
+    if (playerCardCount == 2 && blackjack(playerValue)) {
+        const int gewinn = (int)round(bet * 1.5);  // pays 3 to 2
+        balancePlayers[player][1] += gewinn;
+        printf("Neue Balance: %d€ (Gewinn: +%d€)\n", balancePlayers[player][1], gewinn);
+    }
+    // player wins against dealer
+    else if (dealerValue > 21 || playerValue > dealerValue) {
+        balancePlayers[player][1] += bet;  // pays double
+        printf("Neue Balance: %d€ (+%d€)\n", balancePlayers[player][1], bet);
+    }
+    // player looses
+    else if (playerValue < dealerValue) {
+        balancePlayers[player][1] -= bet;
+        printf("Neue Balance: %d€ (-%d€)\n", balancePlayers[player][1], bet);
+    }
+    // draw - money back
+    else {
+        balancePlayers[player][1] += 0;
+        printf("Balance bleibt bei %d€ (Einsatz zurück)\n", balancePlayers[player][1]);
+    }
+    // reset bet
+    balancePlayers[player][2] = 0;
+}
+
+
+/*
     Determining the winner on basis of the hand value
 */
-void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPlayers, const int numBots, Card dealer[], const int dealerCardCount, int playerCardCount[MAX_PLAYERS]) {
+void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPlayers, const int numBots, Card dealer[], const int dealerCardCount, int playerCardCount[MAX_PLAYERS], int balancePlayers[][3]) {
     int dealerValue = handValue(dealer, dealerCardCount);
     for (int player = 0; player < (numPlayers + numBots); player++) {
         int playerValue = handValue(players[player], playerCardCount[player]);
@@ -463,6 +495,7 @@ void determineWinner(Card players[MAX_PLAYERS + 1][TOTAL_CARDS], const int numPl
         } else {
             printf("Spieler %d und der Dealer haben " TEXT_YELLOW "unentschieden.\n" TEXT_RESET, player + 1);
         }
+        updateBalance(player, playerValue, dealerValue, playerCardCount[player], balancePlayers);
         printf("\n");
     }
 }
@@ -585,7 +618,6 @@ int main() {
 
         // Dealer's turn
         printf("Dealer ist am Zug:\n");
-        int deckIndex = CARDS_PER_PLAYER * (numPlayers + numBots) + CARDS_PER_PLAYER;
         dealerTurn(deck, &cardIndex, dealer, &dealerCardCount);
 
 
@@ -596,19 +628,8 @@ int main() {
         printf("*****************\n\n");
 
 
-        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount); // Determine the winner
+        determineWinner(players, numPlayers, numBots, dealer, dealerCardCount, playerCardCount, balancePlayers); // Determine the winner
         printf("════════════════════\n");
-
-
-        printf("\n\n");
-        printf("════════════════════\n\n");
-        printf("\n");
-
-        for (int player = 0; player < (numPlayers + numBots); player++) {
-            balanceDevelopment(players, player, balancePlayers, dealer, dealerCardCount, playerCardCount); // Balance development
-            printf("Spieler %d hat %d€\n\n", player+1, balancePlayers[player][1]);
-        }
-        printf("════════════════════\n\n");
 
 
         // play again?
